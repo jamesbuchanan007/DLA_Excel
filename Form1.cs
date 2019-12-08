@@ -1617,6 +1617,7 @@ namespace DLA_to_Excel
                                     sl.SetCellValue(Row, ++Column, fsModel.FSC);
                                     sl.SetCellValue(Row, ++Column, fsModel.NIIN);
                                     sl.SetCellValue(Row, ++Column, fsModel.REPLACEMENT_NSN);
+
                                 }
 
                                 //STEP 2
