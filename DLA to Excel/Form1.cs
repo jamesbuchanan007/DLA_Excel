@@ -24,6 +24,7 @@ using Color = System.Drawing.Color;
 using Workbook = Microsoft.Office.Interop.Excel.Workbook;
 using Worksheet = Microsoft.Office.Interop.Excel.Worksheet;
 
+
 namespace DLA_to_Excel
 {
     public partial class Form1 : Form
@@ -168,8 +169,9 @@ namespace DLA_to_Excel
         #region FLISFOIA
         private void FLISFOIA()
         {
-            //Get # Books needed that is less than max excel row (1,000,000)
-            var numBooks = TotalRows / 250000;
+            //Get # Books needed that is less than max excel row (250,000)
+            var maxRows = 250000;
+            var numBooks = TotalRows / maxRows;
             //Number of excel books
             var bookCounter = 0;
             var totalCounter = 0;
@@ -194,26 +196,15 @@ namespace DLA_to_Excel
                     using (var stream = new FileStream(FileLocation, FileMode.Open, FileAccess.Read))
                     using (var reader = new StreamReader(stream))
                     {
-                        UpdateSheetNames(bookCounter);
-
                         using (SLDocument sl = new SLDocument())
                         {
-                            sl.RenameWorksheet(SLDocument.DefaultFirstSheetName, segA); //RECORD TYPE 01
-                            sl.AddWorksheet(segB);  //RECORD TYPE 02
-                            sl.AddWorksheet(segC);  //RECORD TYPE 03
-                            sl.AddWorksheet(segE);  //RECORD TYPE 04
-                            sl.AddWorksheet(segG);  //RECORD TYPE 09
-                            sl.AddWorksheet(segH);  //RECORD TYPE 05
-                            sl.AddWorksheet(segW);  //RECORD TYPE 08
-
-                            while (bookCounter <= numBooks && SheetCounter < 250000 && !reader.EndOfStream &&
-                                   totalCounter <= TotalRows)
+                            //SEG A
+                            while (bookCounter <= numBooks && aRow <= maxRows && !reader.EndOfStream &&
+                                  totalCounter <= TotalRows)
                             {
-                                //STEP 1
-                                if (SheetCounter == 0)
+                                sl.RenameWorksheet(SLDocument.DefaultFirstSheetName, segA); //RECORD TYPE 01
+                                if (aRow == 1)
                                 {
-                                    //SET SEG_A COLUMN NAMES
-                                    sl.SelectWorksheet(segA);
                                     sl.SetCellValue(aRow, Column, "FSG_3994");
                                     sl.SetCellValue(aRow, ++Column, "FSC_WI_FSG_3996");
                                     sl.SetCellValue(aRow, ++Column, "NCB_CD_4130");
@@ -232,8 +223,78 @@ namespace DLA_to_Excel
                                     sl.SetCellValue(aRow, ++Column, "ADPEC_0801");
                                     aRow++;
                                     Column = 1;
+                                }
+                                else
+                                {
+                                    while (FastForward)
+                                    {
+                                        //Used to 'jump' to row
+                                        var fastForwardCounter = bookCounter > 0 ? bookCounter * maxRows : 0;
+
+                                        //Jump to row first
+                                        for (int i = 0; i < fastForwardCounter; i++)
+                                        {
+                                            reader.ReadLine();
+                                        }
+
+                                        FastForward = false;
+                                    }
+                                    var nextLine = reader.ReadLine();
+                                    var id = nextLine.Substring(0, 2);
+
+                                    if (id == "01")
+                                    {
+                                        try { ffModel.FSG_3994 = nextLine.Substring(2, 2); } catch { ffModel.FSG_3994 = ""; }
+                                        try { ffModel.FSC_WI_FSG_3996 = nextLine.Substring(3, 2); } catch { ffModel.FSC_WI_FSG_3996 = ""; }
+                                        try { ffModel.NCB_CD_4130 = nextLine.Substring(5, 2); } catch { ffModel.NCB_CD_4130 = ""; }
+                                        try { ffModel.I_I_NBR_4131 = nextLine.Substring(7, 7); } catch { ffModel.I_I_NBR_4131 = ""; }
+                                        try { ffModel.FIIG_4065 = nextLine.Substring(14, 6); } catch { ffModel.FIIG_4065 = ""; }
+                                        try { ffModel.INC_4080 = nextLine.Substring(20, 5); } catch { ffModel.INC_4080 = ""; }
+                                        try { ffModel.SHRT_NM_2301 = nextLine.Substring(25, 19); } catch { ffModel.SHRT_NM_2301 = ""; }
+                                        try { ffModel.NAIN_5020 = nextLine.Substring(44, 19); } catch { ffModel.NAIN_5020 = ""; }
+                                        try { ffModel.CRITL_CD_FIIG_3843 = nextLine.Substring(63, 1); } catch { ffModel.CRITL_CD_FIIG_3843 = ""; }
+                                        try { ffModel.TYP_II_4820 = nextLine.Substring(64, 1); } catch { ffModel.TYP_II_4820 = ""; }
+                                        try { ffModel.RPDMRC_4765 = nextLine.Substring(65, 1); } catch { ffModel.RPDMRC_4765 = ""; }
+                                        try { ffModel.DEMIL_CD_0167 = nextLine.Substring(66, 1); } catch { ffModel.DEMIL_CD_0167 = ""; }
+                                        try { ffModel.DT_NIIN_ASGMT_2180 = nextLine.Substring(67, 7); } catch { ffModel.DT_NIIN_ASGMT_2180 = ""; }
+                                        try { ffModel.HMIC_0865 = nextLine.Substring(74, 1); } catch { ffModel.HMIC_0865 = ""; }
+                                        try { ffModel.ESD_EMI_CD_2043 = nextLine.Substring(75, 1); } catch { ffModel.ESD_EMI_CD_2043 = ""; }
+                                        try { ffModel.PMIC_0802 = nextLine.Substring(76, 1); } catch { ffModel.PMIC_0802 = ""; }
+                                        try { ffModel.ADPEC_0801 = nextLine.Substring(77, 1); } catch { ffModel.ADPEC_0801 = ""; }
+                                        sl.SetCellValue(aRow, Column, ffModel.FSG_3994);
+                                        sl.SetCellValue(aRow, ++Column, ffModel.FSC_WI_FSG_3996);
+                                        sl.SetCellValue(aRow, ++Column, ffModel.NCB_CD_4130);
+                                        sl.SetCellValue(aRow, ++Column, ffModel.I_I_NBR_4131);
+                                        sl.SetCellValue(aRow, ++Column, ffModel.FIIG_4065);
+                                        sl.SetCellValue(aRow, ++Column, ffModel.INC_4080);
+                                        sl.SetCellValue(aRow, ++Column, ffModel.SHRT_NM_2301);
+                                        sl.SetCellValue(aRow, ++Column, ffModel.NAIN_5020);
+                                        sl.SetCellValue(aRow, ++Column, ffModel.CRITL_CD_FIIG_3843);
+                                        sl.SetCellValue(aRow, ++Column, ffModel.TYP_II_4820);
+                                        sl.SetCellValue(aRow, ++Column, ffModel.RPDMRC_4765);
+                                        sl.SetCellValue(aRow, ++Column, ffModel.DEMIL_CD_0167);
+                                        sl.SetCellValue(aRow, ++Column, ffModel.DT_NIIN_ASGMT_2180);
+                                        sl.SetCellValue(aRow, ++Column, ffModel.HMIC_0865);
+                                        sl.SetCellValue(aRow, ++Column, ffModel.ESD_EMI_CD_2043);
+                                        sl.SetCellValue(aRow, ++Column, ffModel.PMIC_0802);
+                                        sl.SetCellValue(aRow, ++Column, ffModel.ADPEC_0801);
+                                        aRow++;
+                                        Column = 1;
+                                    }
+
+                                }
+                            }
+                            reader.BaseStream.Position = 0;
+                            reader.DiscardBufferedData();
+
+                            //SEG B
+                            while (bookCounter <= numBooks && bRow <= maxRows && !reader.EndOfStream &&
+                               totalCounter <= TotalRows)
+                            {
+                                sl.AddWorksheet(segB);  //RECORD TYPE 02                              
+                                if (bRow == 1)
+                                {
                                     //SET SEG_B COLUMN NAMES
-                                    sl.SelectWorksheet(segB);
                                     sl.SetCellValue(bRow, Column, "MOE_RULE_NBR_8290");
                                     sl.SetCellValue(bRow, ++Column, "AMC_2871");
                                     sl.SetCellValue(bRow, ++Column, "AMSC_2876");
@@ -248,6 +309,235 @@ namespace DLA_to_Excel
                                     sl.SetCellValue(bRow, ++Column, "FMR_MOE_RULE_8280");
                                     bRow++;
                                     Column = 1;
+                                }
+                                else
+                                {
+                                    while (FastForward)
+                                    {
+                                        //Used to 'jump' to row
+                                        var fastForwardCounter = bookCounter > 0 ? bookCounter * maxRows : 0;
+
+                                        //Jump to row first
+                                        for (int i = 0; i < fastForwardCounter; i++)
+                                        {
+                                            reader.ReadLine();
+                                        }
+
+                                        FastForward = false;
+                                    }
+                                    var nextLine = reader.ReadLine();
+                                    var id = nextLine.Substring(0, 2);
+
+                                    if (id == "02")
+                                    {
+                                        var numMoeRules = int.Parse(nextLine.Substring(2, 2));
+                                        var index = 4;
+                                        var text = "";
+                                        for (int i = 0; i < numMoeRules; i++)
+                                        {
+                                            try
+                                            {
+                                                text += ffModel.MOE_RULE_NBR_8290 = nextLine.Substring(index, 4);
+                                                if (i + 1 != numMoeRules) text += "|";
+                                                index += 64;
+                                            }
+                                            catch
+                                            {
+                                            }
+                                        }
+                                        sl.SetCellValue(bRow, Column, text);
+                                        text = "";
+                                        Column++;
+                                        for (int i = 0; i < numMoeRules; i++)
+                                        {
+                                            index = 0;
+                                            try
+                                            {
+                                                text += ffModel.AMC_2871 = nextLine.Substring(index + 4, 1);
+                                                if (i + 1 != numMoeRules) text += "|";
+                                                index += 64;
+                                            }
+                                            catch
+                                            {
+                                            }
+                                        }
+                                        sl.SetCellValue(bRow, Column, text);
+                                        text = "";
+                                        Column++;
+                                        for (int i = 0; i < numMoeRules; i++)
+                                        {
+                                            index = 0;
+                                            try
+                                            {
+                                                text += ffModel.AMSC_2876 = nextLine.Substring(index + 5, 1);
+                                                if (i + 1 != numMoeRules) text += "|"; index += 64;
+                                            }
+                                            catch
+                                            {
+                                            }
+                                        }
+                                        sl.SetCellValue(bRow, Column, text);
+                                        Column++;
+                                        text = "";
+                                        for (int i = 0; i < numMoeRules; i++)
+                                        {
+                                            index = 0;
+                                            try
+                                            {
+                                                text += ffModel.NIMSC_0076 = nextLine.Substring(index + 6, 1);
+                                                if (i + 1 != numMoeRules) text += "|";
+                                                index += 64;
+                                            }
+                                            catch
+                                            {
+                                            }
+                                        }
+                                        sl.SetCellValue(bRow, Column, text);
+                                        Column++;
+                                        text = "";
+                                        for (int i = 0; i < numMoeRules; i++)
+                                        {
+                                            index = 0;
+                                            try
+                                            {
+                                                text += ffModel.EFF_DT_2128 = nextLine.Substring(index + 7, 5);
+                                                if (i + 1 != numMoeRules) text += "|";
+                                                index += 64;
+                                            }
+                                            catch
+                                            {
+                                            }
+                                        }
+                                        sl.SetCellValue(bRow, Column, text);
+                                        Column++;
+                                        text = "";
+                                        for (int i = 0; i < numMoeRules; i++)
+                                        {
+                                            index = 0;
+                                            try
+                                            {
+                                                text += ffModel.IMC_2744 = nextLine.Substring(index + 12, 1);
+                                                if (i + 1 != numMoeRules) text += "|";
+                                                index += 64;
+                                            }
+                                            catch
+                                            {
+                                            }
+                                        }
+                                        sl.SetCellValue(bRow, Column, text);
+                                        Column++;
+                                        text = "";
+                                        for (int i = 0; i < numMoeRules; i++)
+                                        {
+                                            index = 0;
+                                            try
+                                            {
+                                                text += ffModel.IMC_ACTY_2748 = nextLine.Substring(index + 13, 2);
+                                                if (i + 1 != numMoeRules) text += "|";
+                                                index += 64;
+                                            }
+                                            catch
+                                            {
+                                            }
+                                        }
+                                        sl.SetCellValue(bRow, Column, text);
+                                        Column++;
+                                        text = "";
+                                        for (int i = 0; i < numMoeRules; i++)
+                                        {
+                                            index = 0;
+                                            try
+                                            {
+                                                text += ffModel.DSOR_0903 = nextLine.Substring(index + 15, 8);
+                                                if (i + 1 != numMoeRules) text += "|";
+                                                index += 64;
+                                            }
+                                            catch
+                                            {
+                                            }
+                                        }
+                                        sl.SetCellValue(bRow, Column, text);
+                                        Column++;
+                                        text = "";
+                                        for (int i = 0; i < numMoeRules; i++)
+                                        {
+                                            index = 0;
+                                            try
+                                            {
+                                                text += ffModel.SUPPLM_COLLBR_2533 = nextLine.Substring(index + 23, 18);
+                                                if (i + 1 != numMoeRules) text += "|";
+                                                index += 64;
+                                            }
+                                            catch
+                                            {
+                                            }
+                                        }
+                                        sl.SetCellValue(bRow, Column, text);
+                                        Column++;
+                                        text = "";
+                                        for (int i = 0; i < numMoeRules; i++)
+                                        {
+                                            index = 0;
+                                            try
+                                            {
+                                                text += ffModel.SUPPLM_RCVR_2534 = nextLine.Substring(index + 41, 18);
+                                                if (i + 1 != numMoeRules) text += "|";
+                                                index += 64;
+                                            }
+                                            catch
+                                            {
+                                            }
+                                        }
+                                        sl.SetCellValue(bRow, Column, text);
+                                        Column++;
+                                        text = "";
+                                        for (int i = 0; i < numMoeRules; i++)
+                                        {
+                                            index = 0;
+                                            try
+                                            {
+                                                text += ffModel.AAC_2507 = nextLine.Substring(index + 59, 1);
+                                                if (i + 1 != numMoeRules) text += "|";
+                                                index += 64;
+                                            }
+                                            catch
+                                            {
+                                            }
+                                        }
+                                        sl.SetCellValue(bRow, Column, text);
+                                        Column++;
+                                        text = "";
+                                        for (int i = 0; i < numMoeRules; i++)
+                                        {
+                                            index = 0;
+                                            try
+                                            {
+                                                text += ffModel.FMR_MOE_RULE_8280 = nextLine.Substring(index + 60, 4);
+                                                if (i + 1 != numMoeRules) text += "|";
+                                                index += 64;
+                                            }
+                                            catch
+                                            {
+                                            }
+                                        }
+                                        sl.SetCellValue(bRow, Column, text);
+                                        bRow++;
+                                        Column = 1;
+                                    }
+
+                                }
+
+                            }
+                            reader.BaseStream.Position = 0;
+                            reader.DiscardBufferedData();
+
+                            //SEG C
+                            while (bookCounter <= numBooks && cRow <= maxRows && !reader.EndOfStream &&
+                                totalCounter <= TotalRows)
+                            {
+                                sl.AddWorksheet(segC);  //RECORD TYPE 03
+                                if (cRow == 1)
+                                {
                                     //SET SEG_C COLUMN NAMES
                                     sl.SelectWorksheet(segC);
                                     sl.SetCellValue(cRow, Column, "RNFC_2920");
@@ -264,8 +554,298 @@ namespace DLA_to_Excel
                                     sl.SetCellValue(cRow, ++Column, "MSDS_ID_9076");
                                     cRow++;
                                     Column = 1;
-                                    //SET SEG_E COLUMN NAME
-                                    sl.SelectWorksheet(segE);
+                                }
+                                else
+                                {
+                                    while (FastForward)
+                                    {
+                                        //Used to 'jump' to row
+                                        var fastForwardCounter = bookCounter > 0 ? bookCounter * maxRows : 0;
+
+                                        //Jump to row first
+                                        for (int i = 0; i < fastForwardCounter; i++)
+                                        {
+                                            reader.ReadLine();
+                                        }
+
+                                        FastForward = false;
+                                    }
+                                    var nextLine = reader.ReadLine();
+                                    var id = nextLine.Substring(0, 2);
+
+                                    if (id == "03")
+                                    {
+                                        var index = 2;
+                                        var text = "";
+                                        var indexCheck = 0;
+                                        var processCageData = true;
+                                        while (processCageData)
+                                        {
+                                            try { text += ffModel.RNFC_2920 = nextLine.Substring(index, 1); }
+                                            catch
+                                            {
+                                                text += "";
+                                            }
+                                            if (nextLine.Length > index + 54)
+                                            {
+                                                text += "|";
+                                                index += 54;
+                                            }
+                                            else processCageData = false;
+                                        };
+                                        sl.SetCellValue(cRow, Column, text);
+                                        text = "";
+
+                                        processCageData = true;
+                                        while (processCageData)
+                                        {
+                                            try
+                                            {
+                                                text += ffModel.RNCC_2910 = nextLine.Substring(index + 1, 1);
+                                            }
+                                            catch
+                                            {
+                                                text = "";
+                                            }
+                                            if (nextLine.Length > index + 54)
+                                            {
+                                                text += "|";
+                                                index += 54;
+                                            }
+                                            else processCageData = false;
+                                        };
+                                        sl.SetCellValue(cRow, ++Column, text);
+                                        text = "";
+
+                                        processCageData = true;
+                                        while (processCageData)
+                                        {
+                                            try
+                                            {
+                                                text += ffModel.RNVC_4780 = nextLine.Substring(index + 2, 1);
+                                            }
+                                            catch
+                                            {
+                                                text += "";
+                                            }
+                                            if (nextLine.Length > index + 54)
+                                            {
+                                                text += "|";
+                                                index += 54;
+                                            }
+                                            else
+                                                processCageData = false;
+                                        };
+                                        sl.SetCellValue(cRow, ++Column, text);
+                                        text = "";
+                                        processCageData = true;
+                                        while (processCageData)
+                                        {
+                                            try
+                                            {
+                                                text += ffModel.DAC_2640 = nextLine.Substring(index + 3, 1);
+                                            }
+                                            catch
+                                            {
+                                                text += "";
+                                            }
+                                            if (nextLine.Length > index + 54)
+                                            {
+                                                text += "|";
+                                                index += 54;
+                                            }
+                                            else
+                                                processCageData = false;
+                                        };
+                                        sl.SetCellValue(cRow, ++Column, text);
+                                        text = "";
+                                        processCageData = true;
+                                        while (processCageData)
+                                        {
+                                            try
+                                            {
+                                                text += ffModel.RNAAC_2900 = nextLine.Substring(index + 4, 2);
+                                            }
+                                            catch
+                                            {
+                                                text += "";
+                                            }
+                                            if (nextLine.Length > index + 54)
+                                            {
+                                                text += "|";
+                                                index += 54;
+                                            }
+                                            else
+                                                processCageData = false;
+                                        };
+
+                                        sl.SetCellValue(cRow, ++Column, text);
+                                        text = "";
+                                        processCageData = true;
+                                        while (processCageData)
+                                        {
+                                            try
+                                            {
+                                                text += ffModel.RNSC_2923 = nextLine.Substring(index + 6, 1);
+                                            }
+                                            catch
+                                            {
+                                                text += "";
+                                            }
+                                            if (nextLine.Length > index + 54)
+                                            {
+                                                text += "|";
+                                                index += 54;
+                                            }
+                                            else
+                                                processCageData = false;
+                                        };
+                                        sl.SetCellValue(cRow, ++Column, text);
+                                        text = "";
+                                        processCageData = true;
+                                        while (processCageData)
+                                        {
+                                            try
+                                            {
+                                                text += ffModel.RNJC_2750 = nextLine.Substring(index + 7, 1);
+                                            }
+                                            catch
+                                            {
+                                                text += "";
+                                            }
+                                            if (nextLine.Length > index + 54)
+                                            {
+                                                text += "|";
+                                                index += 54;
+                                            }
+                                            else
+                                                processCageData = false;
+                                        };
+                                        sl.SetCellValue(cRow, ++Column, text);
+                                        text = "";
+                                        processCageData = true;
+                                        while (processCageData)
+                                        {
+                                            try
+                                            {
+                                                text += ffModel.CAGE_CD_9250 = nextLine.Substring(index + 8, 5);
+                                            }
+                                            catch
+                                            {
+                                                text += "";
+                                            }
+                                            if (nextLine.Length > index + 54)
+                                            {
+                                                text += "|";
+                                                index += 54;
+                                            }
+                                            else
+                                                processCageData = false;
+                                        };
+                                        sl.SetCellValue(cRow, ++Column, text);
+                                        text = "";
+                                        processCageData = true;
+                                        while (processCageData)
+                                        {
+                                            try
+                                            {
+                                                text += ffModel.REF_NBR_3570 = nextLine.Substring(index + 13, 32);
+                                            }
+                                            catch
+                                            {
+                                                text += "";
+                                            }
+                                            if (nextLine.Length > index + 54)
+                                            {
+                                                text += "|";
+                                                index += 54;
+                                            }
+                                            else
+                                                processCageData = false;
+                                        };
+                                        sl.SetCellValue(cRow, ++Column, text);
+                                        text = "";
+                                        processCageData = true;
+                                        while (processCageData)
+                                        {
+                                            try
+                                            {
+                                                text += ffModel.SADC_4672 = nextLine.Substring(index + 45, 2);
+                                            }
+                                            catch
+                                            {
+                                                text += "";
+                                            }
+                                            if (nextLine.Length > index + 54)
+                                            {
+                                                text += "|";
+                                                index += 54;
+                                            }
+                                            else
+                                                processCageData = false;
+                                        };
+                                        sl.SetCellValue(cRow, ++Column, text);
+                                        text = "";
+                                        processCageData = true;
+                                        while (processCageData)
+                                        {
+                                            try
+                                            {
+                                                text += ffModel.HCC_2579 = nextLine.Substring(index + 47, 2);
+                                            }
+                                            catch
+                                            {
+                                                text += "";
+                                            }
+                                            if (nextLine.Length > index + 54)
+                                            {
+                                                text += "|";
+                                                index += 54;
+                                            }
+                                            else
+                                                processCageData = false;
+                                        };
+                                        sl.SetCellValue(cRow, ++Column, text);
+                                        text = "";
+                                        processCageData = true;
+                                        while (processCageData)
+                                        {
+                                            try
+                                            {
+                                                text += ffModel.MSDS_ID_9076 = nextLine.Substring(index + 49, 5);
+                                            }
+                                            catch
+                                            {
+                                                text += "";
+                                            }
+                                            if (nextLine.Length > index + 54)
+                                            {
+                                                text += "|";
+                                                index += 54;
+                                            }
+                                            else
+                                                processCageData = false;
+                                        };
+                                        sl.SetCellValue(cRow, ++Column, text);
+                                        text = "";
+                                        cRow++;
+                                        Column = 1;
+                                    }
+
+                                }
+
+                            }
+                            reader.BaseStream.Position = 0;
+                            reader.DiscardBufferedData();
+
+                            //SEG E
+                            while (bookCounter <= numBooks && eRow <= maxRows && !reader.EndOfStream &&
+                                 totalCounter <= TotalRows)
+                            {
+                                sl.RenameWorksheet(SLDocument.DefaultFirstSheetName, segA); //RECORD TYPE 01
+                                if (eRow == 1)
+                                {
+                                    sl.AddWorksheet(segE);  //RECORD TYPE 04
                                     sl.SetCellValue(eRow, Column, "ISC_2650");
                                     sl.SetCellValue(eRow, ++Column, "ORG_STDZN_DEC_9325");
                                     sl.SetCellValue(eRow, ++Column, "DT_STDZN_DEC_2300");
@@ -277,8 +857,184 @@ namespace DLA_to_Excel
                                     sl.SetCellValue(eRow, ++Column, "NIIN_STAT_CD_2670");
                                     eRow++;
                                     Column = 1;
-                                    //SET SEG_G COLUMN NAMES
-                                    sl.SelectWorksheet(segG);
+                                }
+                                else
+                                {
+                                    while (FastForward)
+                                    {
+                                        //Used to 'jump' to row
+                                        var fastForwardCounter = bookCounter > 0 ? bookCounter * maxRows : 0;
+
+                                        //Jump to row first
+                                        for (int i = 0; i < fastForwardCounter; i++)
+                                        {
+                                            reader.ReadLine();
+                                        }
+
+                                        FastForward = false;
+                                    }
+                                    var nextLine = reader.ReadLine();
+                                    var id = nextLine.Substring(0, 2);
+
+                                    if (id == "04")
+                                    {
+                                        //SEG E                                     
+                                        sl.SelectWorksheet(segE);
+                                        try
+                                        {
+                                            ffModel.ISC_2650 = nextLine.Substring(2, 1);
+                                        }
+                                        catch
+                                        {
+                                            ffModel.ISC_2650 = "";
+                                        }
+
+                                        try
+                                        {
+                                            ffModel.ORG_STDZN_DEC_9325 = nextLine.Substring(3, 2);
+                                        }
+                                        catch
+                                        {
+                                            ffModel.ORG_STDZN_DEC_9325 = "";
+                                        }
+
+                                        try
+                                        {
+                                            ffModel.DT_STDZN_DEC_2300 = nextLine.Substring(5, 7);
+                                        }
+                                        catch
+                                        {
+                                            ffModel.DT_STDZN_DEC_2300 = "";
+                                        }
+
+                                        try
+                                        {
+                                            ffModel.NIIN_STAT_CD_2670 = nextLine.Substring(12, 1);
+                                        }
+                                        catch
+                                        {
+                                            ffModel.NIIN_STAT_CD_2670 = "";
+                                        }
+                                        sl.SetCellValue(eRow, Column, ffModel.ISC_2650);
+                                        sl.SetCellValue(eRow, ++Column, ffModel.ORG_STDZN_DEC_9325);
+                                        sl.SetCellValue(eRow, ++Column, ffModel.DT_STDZN_DEC_2300);
+                                        sl.SetCellValue(eRow, ++Column, ffModel.NIIN_STAT_CD_2670);
+                                        var numRepCodes = int.Parse(nextLine.Substring(13, 2));
+                                        var index = 15;
+                                        var text = "";
+                                        for (int i = 0; i < numRepCodes; i++)
+                                        {
+                                            try
+                                            {
+                                                text += ffModel.RP_NSN_STD_RL_8977_RPLM_NSN_STDZ_9525 =
+                                                    nextLine.Substring(index, 13);
+                                                if (i + 1 != numRepCodes)
+                                                {
+                                                    text += "|";
+                                                    index += 24;
+                                                }
+                                            }
+                                            catch
+                                            {
+                                                text += "";
+                                            }
+                                        }
+                                        sl.SetCellValue(eRow, ++Column, text);
+                                        text = "";
+                                        index = 15;
+                                        for (int i = 0; i < numRepCodes; i++)
+                                        {
+                                            try
+                                            {
+                                                text += ffModel.ISC_2650 = nextLine.Substring(index + 13, 1);
+                                                if (i + 1 != numRepCodes)
+                                                {
+                                                    text += "|";
+                                                    index += 24;
+                                                }
+                                            }
+                                            catch
+                                            {
+                                                text += "";
+                                            }
+                                        }
+                                        sl.SetCellValue(eRow, ++Column, text);
+                                        text = "";
+                                        index = 15;
+                                        for (int i = 0; i < numRepCodes; i++)
+                                        {
+                                            try
+                                            {
+                                                text += ffModel.ORG_STDZN_DEC_9325 = nextLine.Substring(index + 14, 2);
+                                                if (i + 1 != numRepCodes)
+                                                {
+                                                    text += "|";
+                                                    index += 24;
+                                                }
+                                            }
+                                            catch
+                                            {
+                                                text += "";
+                                            }
+                                        }
+                                        sl.SetCellValue(eRow, ++Column, text);
+                                        text = "";
+                                        index = 15;
+                                        for (int i = 0; i < numRepCodes; i++)
+                                        {
+                                            try
+                                            {
+                                                text += ffModel.DT_STDZN_DEC_2300 = nextLine.Substring(index + 16, 7);
+                                                if (i + 1 != numRepCodes)
+                                                {
+                                                    text += "|";
+                                                    index += 24;
+                                                }
+                                            }
+                                            catch
+                                            {
+                                                text += "";
+                                            }
+                                        }
+
+                                        sl.SetCellValue(eRow, ++Column, text);
+                                        text = "";
+                                        index = 15;
+                                        for (int i = 0; i < numRepCodes; i++)
+                                        {
+                                            try
+                                            {
+                                                text += ffModel.NIIN_STAT_CD_2670 = nextLine.Substring(index + 23, 1);
+                                                if (i + 1 != numRepCodes)
+                                                {
+                                                    text += "|";
+                                                    index += 24;
+                                                }
+                                            }
+                                            catch
+                                            {
+                                                text += "";
+                                            }
+                                        }
+                                        sl.SetCellValue(eRow, ++Column, text);
+                                        text = "";
+                                        eRow++;
+                                        Column = 1;
+                                    }
+
+                                }
+
+                            }
+                            reader.BaseStream.Position = 0;
+                            reader.DiscardBufferedData();
+
+                            //SEG G
+                            while (bookCounter <= numBooks && gRow <= maxRows && !reader.EndOfStream &&
+                                 totalCounter <= TotalRows)
+                            {
+                                sl.AddWorksheet(segG);  //RECORD TYPE 09
+                                if (gRow == 1)
+                                {
                                     sl.SetCellValue(gRow, Column, "INTGTY_CD_0864");
                                     sl.SetCellValue(gRow, ++Column, "ORIG_ACTY_CD_4210");
                                     sl.SetCellValue(gRow, ++Column, "RAIL_VARI_CD_4760");
@@ -296,6 +1052,96 @@ namespace DLA_to_Excel
                                     sl.SetCellValue(gRow, ++Column, "FRT_DESC_4020");
                                     gRow++;
                                     Column = 1;
+                                }
+                                else
+                                {
+                                    while (FastForward)
+                                    {
+                                        //Used to 'jump' to row
+                                        var fastForwardCounter = bookCounter > 0 ? bookCounter * maxRows : 0;
+
+                                        //Jump to row first
+                                        for (int i = 0; i < fastForwardCounter; i++)
+                                        {
+                                            reader.ReadLine();
+                                        }
+
+                                        FastForward = false;
+                                    }
+                                    var nextLine = reader.ReadLine();
+                                    var id = nextLine.Substring(0, 2);
+
+                                    if (id == "09")
+                                    {
+                                        try
+                                        {
+                                            ffModel.INTGTY_CD_0864 = nextLine.Substring(2, 1);
+                                        }
+                                        catch
+                                        {
+                                            ffModel.INTGTY_CD_0864 = "";
+                                        }
+
+                                        try
+                                        {
+                                            ffModel.ORIG_ACTY_CD_4210 = nextLine.Substring(3, 2);
+                                        }
+                                        catch
+                                        {
+                                            ffModel.ORIG_ACTY_CD_4210 = "";
+                                        }
+
+                                        try
+                                        {
+                                            ffModel.RAIL_VARI_CD_4760 = nextLine.Substring(5, 1);
+                                        }
+                                        catch
+                                        {
+                                            ffModel.RAIL_VARI_CD_4760 = "";
+                                        }
+                                        try { ffModel.NMFC_2850 = nextLine.Substring(6, 6); } catch { ffModel.NMFC_2850 = ""; }
+                                        try { ffModel.SUB_ITM_NBR_0861 = nextLine.Substring(12, 1); } catch { ffModel.SUB_ITM_NBR_0861 = ""; }
+                                        try { ffModel.UFC_CD_MODF_3040 = nextLine.Substring(13, 5); } catch { ffModel.UFC_CD_MODF_3040 = ""; }
+                                        try { ffModel.HMC_2720 = nextLine.Substring(18, 2); } catch { ffModel.HMC_2720 = ""; }
+                                        try { ffModel.LCL_CD_2760 = nextLine.Substring(20, 1); } catch { ffModel.LCL_CD_2760 = ""; }
+                                        try { ffModel.WRT_CMDTY_CD_9275 = nextLine.Substring(21, 3); } catch { ffModel.WRT_CMDTY_CD_9275 = ""; }
+                                        try { ffModel.TYPE_CGO_CD_9260 = nextLine.Substring(24, 1); } catch { ffModel.TYPE_CGO_CD_9260 = ""; }
+                                        try { ffModel.SP_HDLG_CD_9240 = nextLine.Substring(25, 1); } catch { ffModel.SP_HDLG_CD_9240 = ""; }
+                                        try { ffModel.AIR_DIM_CD_9220 = nextLine.Substring(26, 1); } catch { ffModel.AIR_DIM_CD_9220 = ""; }
+                                        try { ffModel.AIR_CMTY_HDLG_9215 = nextLine.Substring(27, 2); } catch { ffModel.AIR_CMTY_HDLG_9215 = ""; }
+                                        try { ffModel.CLAS_RTNG_CD_2770 = nextLine.Substring(29, 1); } catch { ffModel.CLAS_RTNG_CD_2770 = ""; }
+                                        try { ffModel.FRT_DESC_4020 = nextLine.Substring(30, 35); } catch { ffModel.FRT_DESC_4020 = ""; }
+
+                                        sl.SetCellValue(gRow, Column, ffModel.INTGTY_CD_0864);
+                                        sl.SetCellValue(gRow, ++Column, ffModel.ORIG_ACTY_CD_4210);
+                                        sl.SetCellValue(gRow, ++Column, ffModel.RAIL_VARI_CD_4760);
+                                        sl.SetCellValue(gRow, ++Column, ffModel.NMFC_2850);
+                                        sl.SetCellValue(gRow, ++Column, ffModel.SUB_ITM_NBR_0861);
+                                        sl.SetCellValue(gRow, ++Column, ffModel.UFC_CD_MODF_3040);
+                                        sl.SetCellValue(gRow, ++Column, ffModel.HMC_2720);
+                                        sl.SetCellValue(gRow, ++Column, ffModel.LCL_CD_2760);
+                                        sl.SetCellValue(gRow, ++Column, ffModel.WRT_CMDTY_CD_9275);
+                                        sl.SetCellValue(gRow, ++Column, ffModel.TYPE_CGO_CD_9260);
+                                        sl.SetCellValue(gRow, ++Column, ffModel.SP_HDLG_CD_9240);
+                                        sl.SetCellValue(gRow, ++Column, ffModel.AIR_DIM_CD_9220);
+                                        sl.SetCellValue(gRow, ++Column, ffModel.AIR_CMTY_HDLG_9215);
+                                        sl.SetCellValue(gRow, ++Column, ffModel.CLAS_RTNG_CD_2770);
+                                        sl.SetCellValue(gRow, ++Column, ffModel.FRT_DESC_4020);
+                                        gRow++;
+                                        Column = 1;
+                                    }
+                                }
+                            }
+                            reader.BaseStream.Position = 0;
+                            reader.DiscardBufferedData();
+
+                            //SEG H
+                            while (bookCounter <= numBooks && hRow <= maxRows && !reader.EndOfStream &&
+                              totalCounter <= TotalRows)
+                            {
+                                sl.AddWorksheet(segH);  //RECORD TYPE 05
+                                if (hRow == 1)
+                                {
                                     //SET SEG_H COLUMN NAMES
                                     sl.SelectWorksheet(segH);
                                     sl.SetCellValue(hRow, Column, "MOE_CD_2833");
@@ -308,6 +1154,7 @@ namespace DLA_to_Excel
                                     sl.SetCellValue(hRow, ++Column, "CIIC_2863");
                                     sl.SetCellValue(hRow, ++Column, "REP_CD_DLA_2934");
                                     sl.SetCellValue(hRow, ++Column, "REP_CD_CG_0709");
+                                    sl.SetCellValue(hRow, ++Column, "ERRC_CD_AF_2655");
                                     sl.SetCellValue(hRow, ++Column, "RECOV_CD_MC_2891");
                                     sl.SetCellValue(hRow, ++Column, "RECOV_CD_AR_2892");
                                     sl.SetCellValue(hRow, ++Column, "MAT_CTL_NVY_2832");
@@ -345,8 +1192,282 @@ namespace DLA_to_Excel
                                     sl.SetCellValue(hRow, ++Column, "JTC_0792");
                                     hRow++;
                                     Column = 1;
-                                    //SET SEG_W COLUMN NAMES
-                                    sl.SelectWorksheet(segW);
+                                }
+                                else
+                                {
+                                    while (FastForward)
+                                    {
+                                        //Used to 'jump' to row
+                                        var fastForwardCounter = bookCounter > 0 ? bookCounter * maxRows : 0;
+
+                                        //Jump to row first
+                                        for (int i = 0; i < fastForwardCounter; i++)
+                                        {
+                                            reader.ReadLine();
+                                        }
+
+                                        FastForward = false;
+                                    }
+                                    var nextLine = reader.ReadLine();
+                                    var id = nextLine.Substring(0, 2);
+
+                                    if (id == "05")
+                                    {
+                                        sl.SelectWorksheet(segH);
+                                        try { ffModel.MOE_CD_2833 = nextLine.Substring(2, 2); } catch { ffModel.MOE_CD_2833 = ""; }
+                                        try { ffModel.SOS_CD_3690_OR_SOSM_CD_2948 = nextLine.Substring(4, 3); } catch { ffModel.SOS_CD_3690_OR_SOSM_CD_2948 = ""; }
+                                        try { ffModel.AAC_2507 = nextLine.Substring(7, 1); } catch { ffModel.AAC_2507 = ""; }
+                                        try { ffModel.QUP_6106 = nextLine.Substring(8, 1); } catch { ffModel.QUP_6106 = ""; }
+                                        try { ffModel.UI_3050 = nextLine.Substring(9, 2); } catch { ffModel.UI_3050 = ""; }
+                                        var dollars = "";
+                                        var dec = "";
+                                        var cents = "";
+                                        try { dollars = nextLine.Substring(11, 9); } catch { dollars = ""; }
+                                        try { dec = nextLine.Substring(20, 1); } catch { dec = ""; }
+                                        try { cents = nextLine.Substring(21, 2); } catch { cents = ""; }
+                                        ffModel.UNIT_PR_7075 = dollars + dec + cents;
+                                        try { ffModel.SLC_2943 = nextLine.Substring(23, 1); } catch { ffModel.SLC_2943 = ""; }
+                                        try { ffModel.CIIC_2863 = nextLine.Substring(24, 1); } catch { ffModel.CIIC_2863 = ""; }
+                                        var repCode = "";
+                                        try { repCode = nextLine.Substring(25, 1); } catch { repCode = ""; }
+                                        ffModel.REP_CD_DLA_2934 = repCode;
+                                        ffModel.REP_CD_CG_0709 = repCode;
+                                        ffModel.ERRC_CD_AF_2655 = repCode;
+                                        ffModel.RECOV_CD_MC_2891 = repCode;
+                                        ffModel.RECOV_CD_AR_2892 = repCode;
+                                        ffModel.MAT_CTL_NVY_2832 = repCode;
+                                        sl.SetCellValue(hRow, Column, ffModel.MOE_CD_2833);
+                                        sl.SetCellValue(hRow, ++Column, ffModel.SOS_CD_3690_OR_SOSM_CD_2948);
+                                        sl.SetCellValue(hRow, ++Column, ffModel.AAC_2507);
+                                        sl.SetCellValue(hRow, ++Column, ffModel.QUP_6106);
+                                        sl.SetCellValue(hRow, ++Column, ffModel.UI_3050);
+                                        sl.SetCellValue(hRow, ++Column, ffModel.UNIT_PR_7075);
+                                        sl.SetCellValue(hRow, ++Column, ffModel.SLC_2943);
+                                        sl.SetCellValue(hRow, ++Column, ffModel.CIIC_2863);
+                                        sl.SetCellValue(hRow, ++Column, ffModel.REP_CD_DLA_2934);
+                                        sl.SetCellValue(hRow, ++Column, ffModel.REP_CD_CG_0709);
+                                        sl.SetCellValue(hRow, ++Column, ffModel.ERRC_CD_AF_2655);
+                                        sl.SetCellValue(hRow, ++Column, ffModel.RECOV_CD_MC_2891);
+                                        sl.SetCellValue(hRow, ++Column, ffModel.RECOV_CD_AR_2892);
+                                        sl.SetCellValue(hRow, ++Column, ffModel.MAT_CTL_NVY_2832);
+
+                                        //MANAGEMENT CONTROL DATA BASED ON MILITARY BRANCH
+                                        switch (ffModel.MOE_CD_2833)
+                                        {
+                                            //ARMY
+                                            case "DA":
+                                                Column = 15;
+                                                var matCatCode = "";
+                                                try { matCatCode = nextLine.Substring(26, 5); } catch { matCatCode = ""; }
+                                                ffModel.MAJ_MCC_AR_9256 = matCatCode;
+                                                ffModel.AR_MCC_AP_SUB_2163 = matCatCode;
+                                                ffModel.AR_MCC_USE_CD_2161 = matCatCode;
+                                                ffModel.AR_MCC_SG_CD1_2167 = matCatCode;
+                                                try { ffModel.ACTG_RQMT_AR_2665 = nextLine.Substring(31, 1); } catch { ffModel.ACTG_RQMT_AR_2665 = ""; }
+                                                sl.SetCellValue(hRow, Column, ffModel.MAJ_MCC_AR_9256);
+                                                sl.SetCellValue(hRow, ++Column, ffModel.AR_MCC_AP_SUB_2163);
+                                                sl.SetCellValue(hRow, ++Column, ffModel.AR_MCC_USE_CD_2161);
+                                                sl.SetCellValue(hRow, ++Column, ffModel.AR_MCC_SG_CD1_2167);
+                                                sl.SetCellValue(hRow, ++Column, ffModel.ACTG_RQMT_AR_2665);
+                                                break;
+
+                                            //AIR FORCE
+                                            case "DF":
+                                                Column = 20;
+                                                try { ffModel.FUND_CD_AF_2695 = nextLine.Substring(26, 2); } catch { ffModel.FUND_CD_AF_2695 = ""; }
+                                                try { ffModel.BDGT_CD_AF_3765 = nextLine.Substring(28, 1); } catch { ffModel.BDGT_CD_AF_3765 = ""; }
+                                                try { ffModel.MMAC_AF_2836 = nextLine.Substring(29, 2); } catch { ffModel.MMAC_AF_2836 = ""; }
+                                                try { ffModel.PVC_AF_0858 = nextLine.Substring(32, 1); } catch { ffModel.PVC_AF_0858 = ""; }
+                                                sl.SetCellValue(hRow, Column, ffModel.FUND_CD_AF_2695);
+                                                sl.SetCellValue(hRow, ++Column, ffModel.BDGT_CD_AF_3765);
+                                                sl.SetCellValue(hRow, ++Column, ffModel.MMAC_AF_2836);
+                                                sl.SetCellValue(hRow, ++Column, ffModel.PVC_AF_0858);
+                                                break;
+
+                                            //MARINES
+                                            case "DM":
+                                                Column = 24;
+                                                try { ffModel.STRS_ACT_MC_2959 = nextLine.Substring(26, 1); } catch { ffModel.STRS_ACT_MC_2959 = ""; }
+                                                try { ffModel.CMBT_ESTL_MC_3311 = nextLine.Substring(27, 1); } catch { ffModel.CMBT_ESTL_MC_3311 = ""; }
+                                                try { ffModel.MAT_MGMT_MC_9257 = nextLine.Substring(28, 1); } catch { ffModel.MAT_MGMT_MC_9257 = ""; }
+                                                try { ffModel.ECH_CD_MC_3150 = nextLine.Substring(29, 1); } catch { ffModel.ECH_CD_MC_3150 = ""; }
+                                                try { ffModel.MAT_IDEN_MC_4126 = nextLine.Substring(30, 1); } catch { ffModel.MAT_IDEN_MC_4126 = ""; }
+                                                try { ffModel.OPRTL_TST_MC_0572 = nextLine.Substring(31, 1); } catch { ffModel.OPRTL_TST_MC_0572 = ""; }
+                                                try { ffModel.PHY_CTGY_MC_0573 = nextLine.Substring(32, 1); } catch { ffModel.PHY_CTGY_MC_0573 = ""; }
+                                                sl.SetCellValue(hRow, Column, ffModel.STRS_ACT_MC_2959);
+                                                sl.SetCellValue(hRow, ++Column, ffModel.CMBT_ESTL_MC_3311);
+                                                sl.SetCellValue(hRow, ++Column, ffModel.MAT_MGMT_MC_9257);
+                                                sl.SetCellValue(hRow, ++Column, ffModel.ECH_CD_MC_3150);
+                                                sl.SetCellValue(hRow, ++Column, ffModel.MAT_IDEN_MC_4126);
+                                                sl.SetCellValue(hRow, ++Column, ffModel.OPRTL_TST_MC_0572);
+                                                sl.SetCellValue(hRow, ++Column, ffModel.PHY_CTGY_MC_0573);
+                                                break;
+
+                                            //NAVY
+                                            case "DN":
+                                                Column = 31;
+                                                try { ffModel.COG_CD_NVY_2608 = nextLine.Substring(26, 2); } catch { ffModel.COG_CD_NVY_2608 = ""; }
+                                                try { ffModel.SMIC_NVY_2834 = nextLine.Substring(28, 2); } catch { ffModel.SMIC_NVY_2834 = ""; }
+                                                try { ffModel.IRRC_NVY_0132 = nextLine.Substring(30, 2); } catch { ffModel.IRRC_NVY_0132 = ""; }
+                                                try { ffModel.SP_MAT_CONT_0121 = nextLine.Substring(32, 1); } catch { ffModel.SP_MAT_CONT_0121 = ""; }
+                                                sl.SetCellValue(hRow, Column, ffModel.COG_CD_NVY_2608);
+                                                sl.SetCellValue(hRow, ++Column, ffModel.SMIC_NVY_2834);
+                                                sl.SetCellValue(hRow, ++Column, ffModel.IRRC_NVY_0132);
+                                                sl.SetCellValue(hRow, ++Column, ffModel.SP_MAT_CONT_0121);
+                                                break;
+
+                                            //COAST GUARD
+                                            case "GP":
+                                                Column = 35;
+                                                try { ffModel.INV_ACT_CG_0708 = nextLine.Substring(26, 1); } catch { ffModel.INV_ACT_CG_0708 = ""; }
+                                                try { ffModel.SER_NO_CTL_CG_0763 = nextLine.Substring(28, 1); } catch { ffModel.SER_NO_CTL_CG_0763 = ""; }
+                                                try { ffModel.SP_MAT_CONT_0121 = nextLine.Substring(29, 1); } catch { ffModel.SP_MAT_CONT_0121 = ""; }
+                                                sl.SetCellValue(hRow, Column, ffModel.INV_ACT_CG_0708);
+                                                sl.SetCellValue(hRow, ++Column, ffModel.SER_NO_CTL_CG_0763);
+                                                sl.SetCellValue(hRow, ++Column, ffModel.SP_MAT_CONT_0121);
+                                                break;
+                                            default:
+                                                Column = 38;
+                                                break;
+                                        }
+                                        Column = 38;
+                                        try { ffModel.EFF_DT_2128 = nextLine.Substring(33, 7); } catch { ffModel.EFF_DT_2128 = ""; }
+                                        try { ffModel.USI_SVC_CD_0745 = nextLine.Substring(40, 1); } catch { ffModel.USI_SVC_CD_0745 = ""; }
+                                        try { ffModel.UI_CONV_FAC_3053 = nextLine.Substring(41, 5); } catch { ffModel.UI_CONV_FAC_3053 = ""; }
+                                        sl.SetCellValue(hRow, Column, ffModel.EFF_DT_2128);
+                                        sl.SetCellValue(hRow, ++Column, ffModel.USI_SVC_CD_0745);
+                                        sl.SetCellValue(hRow, ++Column, ffModel.UI_CONV_FAC_3053);
+
+                                        var phraseCodeCounter = int.Parse(nextLine.Substring(46, 2));
+                                        var text = "";
+                                        var index = 48;
+                                        for (int i = 0; i < phraseCodeCounter; i++)
+                                        {
+                                            try
+                                            {
+                                                text += ffModel.PHRS_CD_2862 = nextLine.Substring(index, 1);
+                                                if (i + 1 != phraseCodeCounter)
+                                                {
+                                                    text += "|";
+                                                    index += 48;
+                                                }
+                                            }
+                                            catch
+                                            {
+                                                text += "";
+                                            }
+                                        }
+                                        sl.SetCellValue(hRow, ++Column, text);
+                                        text = "";
+                                        index = 49;
+                                        for (int i = 0; i < phraseCodeCounter; i++)
+                                        {
+                                            try
+                                            {
+                                                text += ffModel.PHRS_CD_PHRS_5240 = nextLine.Substring(index, 36);
+                                                if (i + 1 != phraseCodeCounter)
+                                                {
+                                                    text += "|";
+                                                    index += 48;
+                                                }
+                                            }
+                                            catch
+                                            {
+                                                text += "";
+                                            }
+                                        }
+                                        sl.SetCellValue(hRow, ++Column, text);
+                                        text = "";
+                                        index = 85;
+                                        for (int i = 0; i < phraseCodeCounter; i++)
+                                        {
+                                            try
+                                            {
+                                                text += ffModel.QTY_PER_ASBL_0106 = nextLine.Substring(index, 3);
+                                                if (i + 1 != phraseCodeCounter)
+                                                {
+                                                    text += "|";
+                                                    index += 48;
+                                                }
+                                            }
+                                            catch
+                                            {
+                                                text += "";
+                                            }
+                                        }
+                                        sl.SetCellValue(hRow, ++Column, text);
+                                        text = "";
+                                        index = 88;
+                                        for (int i = 0; i < phraseCodeCounter; i++)
+                                        {
+                                            try
+                                            {
+                                                text += ffModel.UNIT_MEAS_CD_0107 = nextLine.Substring(index, 2);
+                                                if (i + 1 != phraseCodeCounter)
+                                                {
+                                                    text += "|";
+                                                    index += 48;
+                                                }
+                                            }
+                                            catch
+                                            {
+                                                text += "";
+                                            }
+                                        }
+                                        sl.SetCellValue(hRow, ++Column, text);
+                                        text = "";
+                                        index = 90;
+                                        for (int i = 0; i < phraseCodeCounter; i++)
+                                        {
+                                            try
+                                            {
+                                                text += ffModel.OOU_0793 = nextLine.Substring(index, 3);
+                                                if (i + 1 != phraseCodeCounter)
+                                                {
+                                                    text += "|";
+                                                    index += 48;
+                                                }
+                                            }
+                                            catch
+                                            {
+                                                text += "";
+                                            }
+                                        }
+                                        sl.SetCellValue(hRow, ++Column, text);
+                                        text = "";
+                                        index = 93;
+                                        for (int i = 0; i < phraseCodeCounter; i++)
+                                        {
+                                            try
+                                            {
+                                                text += ffModel.JTC_0792 = nextLine.Substring(index, 3);
+                                                if (i + 1 != phraseCodeCounter)
+                                                {
+                                                    text += "|";
+                                                    index += 48;
+                                                }
+                                            }
+                                            catch
+                                            {
+                                                text += "";
+                                            }
+                                        }
+                                        text = "";
+                                        hRow++;
+                                        Column = 1;
+                                    }
+                                }
+                            }
+                            reader.BaseStream.Position = 0;
+                            reader.DiscardBufferedData();
+
+                            //SEG W
+                            while (bookCounter <= numBooks && wRow <= maxRows && !reader.EndOfStream &&
+                               totalCounter <= TotalRows)
+                            {
+                                sl.AddWorksheet(segW);  //RECORD TYPE 08
+                                if (wRow == 1)
+                                {
                                     sl.SetCellValue(wRow, Column, "PK_DTA_SRC_CD_5148");
                                     sl.SetCellValue(wRow, ++Column, "PICA_SICA_IND_5099");
                                     sl.SetCellValue(wRow, ++Column, "INTMD_CTN_QTY_5152");
@@ -378,13 +1499,14 @@ namespace DLA_to_Excel
                                     sl.SetCellValue(wRow, ++Column, "CTNR_NSN_5178");
                                     sl.SetCellValue(wRow, ++Column, "PKG_DSGN_ACTY_5179");
                                     wRow++;
+                                    Column = 1;
                                 }
                                 else
                                 {
                                     while (FastForward)
                                     {
                                         //Used to 'jump' to row
-                                        var fastForwardCounter = bookCounter > 0 ? bookCounter * 250000 : 0;
+                                        var fastForwardCounter = bookCounter > 0 ? bookCounter * maxRows : 0;
 
                                         //Jump to row first
                                         for (int i = 0; i < fastForwardCounter; i++)
@@ -394,1135 +1516,83 @@ namespace DLA_to_Excel
 
                                         FastForward = false;
                                     }
-
                                     var nextLine = reader.ReadLine();
                                     var id = nextLine.Substring(0, 2);
-                                    //SELECT ACTIVE SHEET
-                                    switch (id)
+
+                                    if (id == "08")
                                     {
-                                        //SEG A
-                                        case "01":
-                                            sl.SelectWorksheet(segA);
-                                            try
-                                            {
-                                                ffModel.FSG_3994 = nextLine.Substring(2, 2);
-                                            }
-                                            catch
-                                            {
-                                                ffModel.FSG_3994 = "";
-                                            }
+                                        try { ffModel.PK_DTA_SRC_CD_5148 = nextLine.Substring(2, 1); } catch { ffModel.PK_DTA_SRC_CD_5148 = ""; }
+                                        try { ffModel.PICA_SICA_IND_5099 = nextLine.Substring(3, 1); } catch { ffModel.PICA_SICA_IND_5099 = ""; }
+                                        try { ffModel.INTMD_CTN_QTY_5152 = nextLine.Substring(4, 1); } catch { ffModel.INTMD_CTN_QTY_5152 = ""; }
+                                        try { ffModel.UP_WT_5153 = nextLine.Substring(5, 5); } catch { ffModel.UP_WT_5153 = ""; }
+                                        try { ffModel.UP_SZ_5154 = nextLine.Substring(10, 12); } catch { ffModel.UP_SZ_5154 = ""; }
+                                        try { ffModel.UP_CU_5155 = nextLine.Substring(22, 7); } catch { ffModel.UP_CU_5155 = ""; }
+                                        try { ffModel.PKG_CTGY_CD_5159 = nextLine.Substring(29, 4); } catch { ffModel.PKG_CTGY_CD_5159 = ""; }
+                                        try { ffModel.ITM_TYP_STOR_5156 = nextLine.Substring(33, 1); } catch { ffModel.ITM_TYP_STOR_5156 = ""; }
+                                        try { ffModel.UNPKG_ITM_WT_5157 = nextLine.Substring(34, 5); } catch { ffModel.UNPKG_ITM_WT_5157 = ""; }
+                                        try { ffModel.UNPKG_ITM_DIM_5158 = nextLine.Substring(39, 12); } catch { ffModel.UNPKG_ITM_DIM_5158 = ""; }
+                                        try { ffModel.MTHD_PRSRV_CD_5160 = nextLine.Substring(51, 2); } catch { ffModel.MTHD_PRSRV_CD_5160 = ""; }
+                                        try { ffModel.CLNG_DRY_PRC_5161 = nextLine.Substring(53, 1); } catch { ffModel.CLNG_DRY_PRC_5161 = ""; }
+                                        try { ffModel.PRSRV_MAT_CD_5162 = nextLine.Substring(54, 2); } catch { ffModel.PRSRV_MAT_CD_5162 = ""; }
+                                        try { ffModel.WRAP_MAT_CD_5163 = nextLine.Substring(56, 2); } catch { ffModel.WRAP_MAT_CD_5163 = ""; }
+                                        try { ffModel.CUSH_DUN_MAT_5164 = nextLine.Substring(58, 2); } catch { ffModel.CUSH_DUN_MAT_5164 = ""; }
+                                        try { ffModel.THK_CUSH_DUN_5165 = nextLine.Substring(60, 1); } catch { ffModel.THK_CUSH_DUN_5165 = ""; }
+                                        try { ffModel.UNIT_CTNR_CD_5166 = nextLine.Substring(62, 2); } catch { ffModel.UNIT_CTNR_CD_5166 = ""; }
+                                        try { ffModel.INTMD_CTNR_CD_5167 = nextLine.Substring(64, 2); } catch { ffModel.INTMD_CTNR_CD_5167 = ""; }
+                                        try { ffModel.UNIT_CTNR_LVL_5168 = nextLine.Substring(66, 1); } catch { ffModel.UNIT_CTNR_LVL_5168 = ""; }
+                                        try { ffModel.SP_MKG_CD_5169 = nextLine.Substring(67, 2); } catch { ffModel.SP_MKG_CD_5169 = ""; }
+                                        try { ffModel.LVL_A_PKG_CD_5170 = nextLine.Substring(69, 1); } catch { ffModel.LVL_A_PKG_CD_5170 = ""; }
+                                        try { ffModel.LVL_B_PKG_CD_5171 = nextLine.Substring(70, 1); } catch { ffModel.LVL_B_PKG_CD_5171 = ""; }
+                                        try { ffModel.MINM_PK_RQ_CD_5172 = nextLine.Substring(72, 1); } catch { ffModel.MINM_PK_RQ_CD_5172 = ""; }
+                                        try { ffModel.OPTNL_PRO_IND_5173 = nextLine.Substring(73, 1); } catch { ffModel.OPTNL_PRO_IND_5173 = ""; }
 
-                                            try
-                                            {
-                                                ffModel.FSC_WI_FSG_3996 = nextLine.Substring(3, 2);
-                                            }
-                                            catch
-                                            {
-                                                ffModel.FSC_WI_FSG_3996 = "";
-                                            }
-
-                                            try
-                                            {
-                                                ffModel.NCB_CD_4130 = nextLine.Substring(5, 2);
-                                            }
-                                            catch
-                                            {
-                                                ffModel.NCB_CD_4130 = "";
-                                            }
-
-                                            try
-                                            {
-                                                ffModel.I_I_NBR_4131 = nextLine.Substring(7, 7);
-                                            }
-                                            catch
-                                            {
-                                                ffModel.I_I_NBR_4131 = "";
-                                            }
-                                            try { ffModel.FIIG_4065 = nextLine.Substring(14, 6); } catch { ffModel.FIIG_4065 = ""; }
-                                            try { ffModel.INC_4080 = nextLine.Substring(20, 5); } catch { ffModel.INC_4080 = ""; }
-                                            try { ffModel.SHRT_NM_2301 = nextLine.Substring(25, 19); } catch { ffModel.SHRT_NM_2301 = ""; }
-                                            try { ffModel.NAIN_5020 = nextLine.Substring(44, 19); } catch { ffModel.NAIN_5020 = ""; }
-                                            try { ffModel.CRITL_CD_FIIG_3843 = nextLine.Substring(63, 1); } catch { ffModel.CRITL_CD_FIIG_3843 = ""; }
-                                            try { ffModel.TYP_II_4820 = nextLine.Substring(64, 1); } catch { ffModel.TYP_II_4820 = ""; }
-                                            try { ffModel.RPDMRC_4765 = nextLine.Substring(65, 1); } catch { ffModel.RPDMRC_4765 = ""; }
-                                            try { ffModel.DEMIL_CD_0167 = nextLine.Substring(66, 1); } catch { ffModel.DEMIL_CD_0167 = ""; }
-                                            try { ffModel.DT_NIIN_ASGMT_2180 = nextLine.Substring(67, 7); } catch { ffModel.DT_NIIN_ASGMT_2180 = ""; }
-                                            try { ffModel.HMIC_0865 = nextLine.Substring(74, 1); } catch { ffModel.HMIC_0865 = ""; }
-                                            try { ffModel.ESD_EMI_CD_2043 = nextLine.Substring(75, 1); } catch { ffModel.ESD_EMI_CD_2043 = ""; }
-                                            try { ffModel.PMIC_0802 = nextLine.Substring(76, 1); } catch { ffModel.PMIC_0802 = ""; }
-                                            try { ffModel.ADPEC_0801 = nextLine.Substring(77, 1); } catch { ffModel.ADPEC_0801 = ""; }
-                                            sl.SetCellValue(aRow, Column, ffModel.FSG_3994);
-                                            sl.SetCellValue(aRow, ++Column, ffModel.FSC_WI_FSG_3996);
-                                            sl.SetCellValue(aRow, ++Column, ffModel.NCB_CD_4130);
-                                            sl.SetCellValue(aRow, ++Column, ffModel.I_I_NBR_4131);
-                                            sl.SetCellValue(aRow, ++Column, ffModel.FIIG_4065);
-                                            sl.SetCellValue(aRow, ++Column, ffModel.INC_4080);
-                                            sl.SetCellValue(aRow, ++Column, ffModel.SHRT_NM_2301);
-                                            sl.SetCellValue(aRow, ++Column, ffModel.NAIN_5020);
-                                            sl.SetCellValue(aRow, ++Column, ffModel.CRITL_CD_FIIG_3843);
-                                            sl.SetCellValue(aRow, ++Column, ffModel.TYP_II_4820);
-                                            sl.SetCellValue(aRow, ++Column, ffModel.RPDMRC_4765);
-                                            sl.SetCellValue(aRow, ++Column, ffModel.DEMIL_CD_0167);
-                                            sl.SetCellValue(aRow, ++Column, ffModel.DT_NIIN_ASGMT_2180);
-                                            sl.SetCellValue(aRow, ++Column, ffModel.HMIC_0865);
-                                            sl.SetCellValue(aRow, ++Column, ffModel.ESD_EMI_CD_2043);
-                                            sl.SetCellValue(aRow, ++Column, ffModel.PMIC_0802);
-                                            sl.SetCellValue(aRow, ++Column, ffModel.ADPEC_0801);
-                                            aRow++;
-                                            break;
-
-                                        //SEG B
-                                        case "02":
-                                            sl.SelectWorksheet(segB);
-                                            var numMoeRules = int.Parse(nextLine.Substring(2, 2));
-                                            var index = 4;
-                                            var text = "";
-                                            for (int i = 0; i < numMoeRules; i++)
-                                            {
-                                                try
-                                                {
-                                                    text += ffModel.MOE_RULE_NBR_8290 = nextLine.Substring(index, 4);
-                                                    if (i + 1 != numMoeRules) text += "|";
-                                                    index += 64;
-                                                }
-                                                catch
-                                                {
-                                                }
-                                            }
-                                            sl.SetCellValue(bRow, Column, text);
-                                            text = "";
-                                            Column++;
-                                            for (int i = 0; i < numMoeRules; i++)
-                                            {
-                                                index = 0;
-                                                try
-                                                {
-                                                    text += ffModel.AMC_2871 = nextLine.Substring(index+ 4, 1);
-                                                    if (i + 1 != numMoeRules) text += "|";
-                                                    index += 64;
-                                                }
-                                                catch
-                                                {
-                                                }
-                                            }
-                                            sl.SetCellValue(bRow, Column, text);
-                                            text = "";
-                                            Column++;
-                                            for (int i = 0; i < numMoeRules; i++)
-                                            {
-                                                index = 0;
-                                                try
-                                                {
-                                                    text += ffModel.AMSC_2876 = nextLine.Substring(index + 5, 1);
-                                                    if (i + 1 != numMoeRules) text += "|"; index += 64;
-                                                }
-                                                catch
-                                                {
-                                                }
-                                            }
-                                            sl.SetCellValue(bRow, Column, text);
-                                            Column++;
-                                            text = "";
-                                            for (int i = 0; i < numMoeRules; i++)
-                                            {
-                                                index = 0;
-                                                try
-                                                {
-                                                    text += ffModel.NIMSC_0076 = nextLine.Substring(index + 6, 1);
-                                                    if (i + 1 != numMoeRules) text += "|";
-                                                    index += 64;
-                                                }
-                                                catch
-                                                {
-                                                }
-                                            }
-                                            sl.SetCellValue(bRow, Column, text);
-                                            Column++;
-                                            text = "";
-                                            for (int i = 0; i < numMoeRules; i++)
-                                            {
-                                                index = 0;
-                                                try
-                                                {
-                                                    text += ffModel.EFF_DT_2128 = nextLine.Substring(index + 7, 5);
-                                                    if (i + 1 != numMoeRules) text += "|";
-                                                    index += 64;
-                                                }
-                                                catch
-                                                {
-                                                }
-                                            }
-                                            sl.SetCellValue(bRow, Column, text);
-                                            Column++;
-                                            text = "";
-                                            for (int i = 0; i < numMoeRules; i++)
-                                            {
-                                                index = 0;
-                                                try
-                                                {
-                                                    text += ffModel.IMC_2744 = nextLine.Substring(index + 12, 1);
-                                                    if (i + 1 != numMoeRules) text += "|";
-                                                    index += 64;
-                                                }
-                                                catch
-                                                {
-                                                }
-                                            }
-                                            sl.SetCellValue(bRow, Column, text);
-                                            Column++;
-                                            text = "";
-                                            for (int i = 0; i < numMoeRules; i++)
-                                            {
-                                                index = 0;
-                                                try
-                                                {
-                                                    text += ffModel.IMC_ACTY_2748 = nextLine.Substring(index + 13, 2);
-                                                    if (i + 1 != numMoeRules) text += "|";
-                                                    index += 64;
-                                                }
-                                                catch
-                                                {
-                                                }
-                                            }
-                                            sl.SetCellValue(bRow, Column, text);
-                                            Column++;
-                                            text = "";
-                                            for (int i = 0; i < numMoeRules; i++)
-                                            {
-                                                index = 0;
-                                                try
-                                                {
-                                                    text += ffModel.DSOR_0903 = nextLine.Substring(index + 15, 8);
-                                                    if (i + 1 != numMoeRules) text += "|";
-                                                    index += 64;
-                                                }
-                                                catch
-                                                {
-                                                }
-                                            }
-                                            sl.SetCellValue(bRow, Column, text);
-                                            Column++;
-                                            text = "";
-                                            for (int i = 0; i < numMoeRules; i++)
-                                            {
-                                                index = 0;
-                                                try
-                                                {
-                                                    text += ffModel.SUPPLM_COLLBR_2533 = nextLine.Substring(index + 23, 18);
-                                                    if (i + 1 != numMoeRules) text += "|";
-                                                    index += 64;
-                                                }
-                                                catch
-                                                {
-                                                }
-                                            }
-                                            sl.SetCellValue(bRow, Column, text);
-                                            Column++;
-                                            text = "";
-                                            for (int i = 0; i < numMoeRules; i++)
-                                            {
-                                                index = 0;
-                                                try
-                                                {
-                                                    text += ffModel.SUPPLM_RCVR_2534 = nextLine.Substring(index + 41, 18);
-                                                    if (i + 1 != numMoeRules) text += "|";
-                                                    index += 64;
-                                                }
-                                                catch
-                                                {
-                                                }
-                                            }
-                                            sl.SetCellValue(bRow, Column, text);
-                                            Column++;
-                                            text = "";
-                                            for (int i = 0; i < numMoeRules; i++)
-                                            {
-                                                index = 0;
-                                                try
-                                                {
-                                                    text += ffModel.AAC_2507 = nextLine.Substring(index + 59, 1);
-                                                    if (i + 1 != numMoeRules) text += "|";
-                                                    index += 64;
-                                                }
-                                                catch
-                                                {
-                                                }
-                                            }
-                                            sl.SetCellValue(bRow, Column, text);
-                                            Column++;
-                                            text = "";
-                                            for (int i = 0; i < numMoeRules; i++)
-                                            {
-                                                index = 0;
-                                                try
-                                                {
-                                                    text += ffModel.FMR_MOE_RULE_8280 = nextLine.Substring(index + 60, 4);
-                                                    if (i + 1 != numMoeRules) text += "|";
-                                                    index += 64;
-                                                }
-                                                catch
-                                                {
-                                                }
-                                            }
-                                            sl.SetCellValue(bRow, Column, text);
-                                            bRow++;
-                                            break;
-
-                                        //SEG C
-                                        case "03":
-                                            sl.SelectWorksheet(segC);
-                                            index = 2;
-                                            text = "";
-                                            var indexCheck = 0;
-                                            var processCageData = true;
-                                            while (processCageData)
-                                            {
-                                                try { text += ffModel.RNFC_2920 = nextLine.Substring(index, 1); }
-                                                catch
-                                                {
-                                                    text += "";
-                                                }
-                                                if (nextLine.Length > index + 54)
-                                                {
-                                                    text += "|";
-                                                    index += 54;
-                                                }
-                                                else
-                                                {
-                                                    sl.SetCellValue(cRow, Column, text);
-                                                    processCageData = false;
-                                                    text = "";
-                                                }
-                                            };
-                                            processCageData = true;
-                                            while (processCageData)
-                                            {
-                                                try
-                                                {
-                                                    text += ffModel.RNCC_2910 = nextLine.Substring(index + 1, 1);
-                                                }
-                                                catch
-                                                {
-                                                    text = "";
-                                                }
-                                                if (nextLine.Length > index + 54)
-                                                {
-                                                    text += "|";
-                                                    index += 54;
-                                                }
-                                                else
-                                                {
-                                                    sl.SetCellValue(cRow, ++Column, text);
-                                                    processCageData = false;
-                                                    text = "";
-                                                }
-                                            };
-                                            processCageData = true;
-                                            while (processCageData)
-                                            {
-                                                try
-                                                {
-                                                    text += ffModel.RNVC_4780 = nextLine.Substring(index + 2, 1);
-                                                }
-                                                catch
-                                                {
-                                                    text += "";
-                                                }
-                                                if (nextLine.Length > index + 54)
-                                                {
-                                                    text += "|";
-                                                    index += 54;
-                                                }
-                                                else
-                                                {
-                                                    sl.SetCellValue(cRow, ++Column, text);
-                                                    processCageData = false;
-                                                    text = "";
-                                                }
-                                            };
-                                            processCageData = true;
-                                            while (processCageData)
-                                            {
-                                                try
-                                                {
-                                                    text += ffModel.DAC_2640 = nextLine.Substring(index + 3, 1);
-                                                }
-                                                catch
-                                                {
-                                                    text += "";
-                                                }
-                                                if (nextLine.Length > index + 54)
-                                                {
-                                                    text += "|";
-                                                    index += 54;
-                                                }
-                                                else
-                                                {
-                                                    sl.SetCellValue(cRow, ++Column, text);
-                                                    processCageData = false;
-                                                    text = "";
-                                                }
-                                            };
-                                            processCageData = true;
-                                            while (processCageData)
-                                            {
-                                                try
-                                                {
-                                                    text += ffModel.RNAAC_2900 = nextLine.Substring(index + 4, 2);
-                                                }
-                                                catch
-                                                {
-                                                    text += "";
-                                                }
-                                                if (nextLine.Length > index + 54)
-                                                {
-                                                    text += "|";
-                                                    index += 54;
-                                                }
-                                                else
-                                                {
-                                                    sl.SetCellValue(cRow, ++Column, text);
-                                                    processCageData = false;
-                                                    text = "";
-                                                }
-                                            };
-                                            processCageData = true;
-                                            while (processCageData)
-                                            {
-                                                try
-                                                {
-                                                    text += ffModel.RNSC_2923 = nextLine.Substring(index + 6, 1);
-                                                }
-                                                catch
-                                                {
-                                                    text += "";
-                                                }
-                                                if (nextLine.Length > index + 54)
-                                                {
-                                                    text += "|";
-                                                    index += 54;
-                                                }
-                                                else
-                                                {
-                                                    sl.SetCellValue(cRow, ++Column, text);
-                                                    processCageData = false;
-                                                    text = "";
-                                                }
-                                            };
-                                            processCageData = true;
-                                            while (processCageData)
-                                            {
-                                                try
-                                                {
-                                                    text += ffModel.RNJC_2750 = nextLine.Substring(index + 7, 1);
-                                                }
-                                                catch
-                                                {
-                                                    text += "";
-                                                }
-                                                if (nextLine.Length > index + 54)
-                                                {
-                                                    text += "|";
-                                                    index += 54;
-                                                }
-                                                else
-                                                {
-                                                    sl.SetCellValue(cRow, ++Column, text);
-                                                    processCageData = false;
-                                                    text = "";
-                                                }
-                                            };
-                                            processCageData = true;
-                                            while (processCageData)
-                                            {
-                                                try
-                                                {
-                                                    text += ffModel.CAGE_CD_9250 = nextLine.Substring(index + 8, 5);
-                                                }
-                                                catch
-                                                {
-                                                    text += "";
-                                                }
-                                                if (nextLine.Length > index + 54)
-                                                {
-                                                    text += "|";
-                                                    index += 54;
-                                                }
-                                                else
-                                                {
-                                                    sl.SetCellValue(cRow, ++Column, text);
-                                                    processCageData = false;
-                                                    text = "";
-                                                }
-                                            };
-                                            processCageData = true;
-                                            while (processCageData)
-                                            {
-                                                try
-                                                {
-                                                    text += ffModel.REF_NBR_3570 = nextLine.Substring(index + 13, 32);
-                                                }
-                                                catch
-                                                {
-                                                    text += "";
-                                                }
-                                                if (nextLine.Length > index + 54)
-                                                {
-                                                    text += "|";
-                                                    index += 54;
-                                                }
-                                                else
-                                                {
-                                                    sl.SetCellValue(cRow, ++Column, text);
-                                                    processCageData = false;
-                                                    text = "";
-                                                }
-                                            };
-                                            processCageData = true;
-                                            while (processCageData)
-                                            {
-                                                try
-                                                {
-                                                    text += ffModel.SADC_4672 = nextLine.Substring(index + 45, 2);
-                                                }
-                                                catch
-                                                {
-                                                    text += "";
-                                                }
-                                                if (nextLine.Length > index + 54)
-                                                {
-                                                    text += "|";
-                                                    index += 54;
-                                                }
-                                                else
-                                                {
-                                                    sl.SetCellValue(cRow, ++Column, text);
-                                                    processCageData = false;
-                                                    text = "";
-                                                }
-                                            };
-                                            processCageData = true;
-                                            while (processCageData)
-                                            {
-                                                try
-                                                {
-                                                    text += ffModel.HCC_2579 = nextLine.Substring(index + 47, 2);
-                                                }
-                                                catch
-                                                {
-                                                    text += "";
-                                                }
-                                                if (nextLine.Length > index + 54)
-                                                {
-                                                    text += "|";
-                                                    index += 54;
-                                                }
-                                                else
-                                                {
-                                                    sl.SetCellValue(cRow, ++Column, text);
-                                                    processCageData = false;
-                                                    text = "";
-                                                }
-                                            };
-                                            processCageData = true;
-                                            while (processCageData)
-                                            {
-                                                try
-                                                {
-                                                    text += ffModel.MSDS_ID_9076 = nextLine.Substring(index + 49, 5);
-                                                }
-                                                catch
-                                                {
-                                                    text += "";
-                                                }
-                                                if (nextLine.Length > index + 54)
-                                                {
-                                                    text += "|";
-                                                    index += 54;
-                                                }
-                                                else
-                                                {
-                                                    sl.SetCellValue(cRow, ++Column, text);
-                                                    processCageData = false;
-                                                    text = "";
-                                                }
-                                            };
-                                            cRow++;
-                                            break;
-
-                                        //SEG E
-                                        case "04":
-                                            sl.SelectWorksheet(segE);
-                                            try
-                                            {
-                                                ffModel.ISC_2650 = nextLine.Substring(2, 1);
-                                            }
-                                            catch
-                                            {
-                                                ffModel.ISC_2650 = "";
-                                            }
-
-                                            try
-                                            {
-                                                ffModel.ORG_STDZN_DEC_9325 = nextLine.Substring(3, 2);
-                                            }
-                                            catch
-                                            {
-                                                ffModel.ORG_STDZN_DEC_9325 = "";
-                                            }
-
-                                            try
-                                            {
-                                                ffModel.DT_STDZN_DEC_2300 = nextLine.Substring(5, 7);
-                                            }
-                                            catch
-                                            {
-                                                ffModel.DT_STDZN_DEC_2300 = "";
-                                            }
-
-                                            try
-                                            {
-                                                ffModel.NIIN_STAT_CD_2670 = nextLine.Substring(12, 1);
-                                            }
-                                            catch
-                                            {
-                                                ffModel.NIIN_STAT_CD_2670 = "";
-                                            }
-                                            sl.SetCellValue(eRow, Column, ffModel.ISC_2650);
-                                            sl.SetCellValue(eRow, ++Column, ffModel.ORG_STDZN_DEC_9325);
-                                            sl.SetCellValue(eRow, ++Column, ffModel.DT_STDZN_DEC_2300);
-                                            sl.SetCellValue(eRow, ++Column, ffModel.NIIN_STAT_CD_2670);
-                                            var numRepCodes = int.Parse(nextLine.Substring(13, 2));
-                                            index = 15;
-                                            text = "";
-                                            for (int i = 0; i < numRepCodes; i++)
-                                            {
-                                                try
-                                                {
-                                                    text += ffModel.RP_NSN_STD_RL_8977_RPLM_NSN_STDZ_9525 =
-                                                        nextLine.Substring(index, 13);
-                                                }
-                                                catch
-                                                {
-                                                    text += "";
-                                                }
-                                                if (i + 1 != numRepCodes)
-                                                {
-                                                    text += "|";
-                                                    index += 24;
-                                                }
-                                                else
-                                                {
-                                                    sl.SetCellValue(eRow, ++Column, text);
-                                                    text = "";
-                                                }
-                                            }
-                                            index = 15;
-                                            for (int i = 0; i < numRepCodes; i++)
-                                            {
-                                                try
-                                                {
-                                                    text += ffModel.ISC_2650 = nextLine.Substring(index + 13, 1);
-                                                }
-                                                catch
-                                                {
-                                                    text += "";
-                                                }
-                                                if (i + 1 != numRepCodes)
-                                                {
-                                                    text += "|";
-                                                    index += 24;
-                                                }
-                                                else
-                                                {
-                                                    sl.SetCellValue(eRow, ++Column, text);
-                                                    text = "";
-                                                }
-                                            }
-                                            index = 15;
-                                            for (int i = 0; i < numRepCodes; i++)
-                                            {
-                                                try
-                                                {
-                                                    text += ffModel.ORG_STDZN_DEC_9325 = nextLine.Substring(index + 14, 2);
-                                                }
-                                                catch
-                                                {
-                                                    text += "";
-                                                }
-                                                if (i + 1 != numRepCodes)
-                                                {
-                                                    text += "|";
-                                                    index += 24;
-                                                }
-                                                else
-                                                {
-                                                    sl.SetCellValue(eRow, ++Column, text);
-                                                    text = "";
-                                                }
-                                            }
-                                            index = 15;
-                                            for (int i = 0; i < numRepCodes; i++)
-                                            {
-                                                try
-                                                {
-                                                    text += ffModel.DT_STDZN_DEC_2300 = nextLine.Substring(index + 16, 7);
-                                                }
-                                                catch
-                                                {
-                                                    text += "";
-                                                }
-                                                if (i + 1 != numRepCodes)
-                                                {
-                                                    text += "|";
-                                                    index += 24;
-                                                }
-                                                else
-                                                {
-                                                    sl.SetCellValue(eRow, ++Column, text);
-                                                    text = "";
-                                                }
-                                            }
-                                            index = 15;
-                                            for (int i = 0; i < numRepCodes; i++)
-                                            {
-                                                try
-                                                {
-                                                    text += ffModel.NIIN_STAT_CD_2670 = nextLine.Substring(index + 23, 1);
-                                                }
-                                                catch
-                                                {
-                                                    text += "";
-                                                }
-                                                if (i + 1 != numRepCodes)
-                                                {
-                                                    text += "|";
-                                                    index += 24;
-                                                }
-                                                else
-                                                {
-                                                    sl.SetCellValue(eRow, ++Column, text);
-                                                    text = "";
-                                                }
-                                            }
-
-                                            eRow++;
-                                            break;
-                                        case "09":  //SEG G
-                                            sl.SelectWorksheet(segG);
-                                            try
-                                            {
-                                                ffModel.INTGTY_CD_0864 = nextLine.Substring(2, 1);
-                                            }
-                                            catch
-                                            {
-                                                ffModel.INTGTY_CD_0864 = "";
-                                            }
-
-                                            try
-                                            {
-                                                ffModel.ORIG_ACTY_CD_4210 = nextLine.Substring(3, 2);
-                                            }
-                                            catch
-                                            {
-                                                ffModel.ORIG_ACTY_CD_4210 = "";
-                                            }
-
-                                            try
-                                            {
-                                                ffModel.RAIL_VARI_CD_4760 = nextLine.Substring(5, 1);
-                                            }
-                                            catch
-                                            {
-                                                ffModel.RAIL_VARI_CD_4760 = "";
-                                            }
-                                            try { ffModel.NMFC_2850 = nextLine.Substring(6, 6); } catch { ffModel.NMFC_2850 = ""; }
-                                            try { ffModel.SUB_ITM_NBR_0861 = nextLine.Substring(12, 1); } catch { ffModel.SUB_ITM_NBR_0861 = ""; }
-                                            try { ffModel.UFC_CD_MODF_3040 = nextLine.Substring(13, 5); } catch { ffModel.UFC_CD_MODF_3040 = ""; }
-                                            try { ffModel.HMC_2720 = nextLine.Substring(18, 2); } catch { ffModel.HMC_2720 = ""; }
-                                            try { ffModel.LCL_CD_2760 = nextLine.Substring(20, 1); } catch { ffModel.LCL_CD_2760 = ""; }
-                                            try { ffModel.WRT_CMDTY_CD_9275 = nextLine.Substring(21, 3); } catch { ffModel.WRT_CMDTY_CD_9275 = ""; }
-                                            try { ffModel.TYPE_CGO_CD_9260 = nextLine.Substring(24, 1); } catch { ffModel.TYPE_CGO_CD_9260 = ""; }
-                                            try { ffModel.SP_HDLG_CD_9240 = nextLine.Substring(25, 1); } catch { ffModel.SP_HDLG_CD_9240 = ""; }
-                                            try { ffModel.AIR_DIM_CD_9220 = nextLine.Substring(26, 1); } catch { ffModel.AIR_DIM_CD_9220 = ""; }
-                                            try { ffModel.AIR_CMTY_HDLG_9215 = nextLine.Substring(27, 2); } catch { ffModel.AIR_CMTY_HDLG_9215 = ""; }
-                                            try { ffModel.CLAS_RTNG_CD_2770 = nextLine.Substring(29, 1); } catch { ffModel.CLAS_RTNG_CD_2770 = ""; }
-                                            try { ffModel.FRT_DESC_4020 = nextLine.Substring(30, 35); } catch { ffModel.FRT_DESC_4020 = ""; }
-
-                                            sl.SetCellValue(gRow, Column, ffModel.INTGTY_CD_0864);
-                                            sl.SetCellValue(gRow, ++Column, ffModel.ORIG_ACTY_CD_4210);
-                                            sl.SetCellValue(gRow, ++Column, ffModel.RAIL_VARI_CD_4760);
-                                            sl.SetCellValue(gRow, ++Column, ffModel.NMFC_2850);
-                                            sl.SetCellValue(gRow, ++Column, ffModel.SUB_ITM_NBR_0861);
-                                            sl.SetCellValue(gRow, ++Column, ffModel.UFC_CD_MODF_3040);
-                                            sl.SetCellValue(gRow, ++Column, ffModel.HMC_2720);
-                                            sl.SetCellValue(gRow, ++Column, ffModel.LCL_CD_2760);
-                                            sl.SetCellValue(gRow, ++Column, ffModel.WRT_CMDTY_CD_9275);
-                                            sl.SetCellValue(gRow, ++Column, ffModel.TYPE_CGO_CD_9260);
-                                            sl.SetCellValue(gRow, ++Column, ffModel.SP_HDLG_CD_9240);
-                                            sl.SetCellValue(gRow, ++Column, ffModel.AIR_DIM_CD_9220);
-                                            sl.SetCellValue(gRow, ++Column, ffModel.AIR_CMTY_HDLG_9215);
-                                            sl.SetCellValue(gRow, ++Column, ffModel.CLAS_RTNG_CD_2770);
-                                            sl.SetCellValue(gRow, ++Column, ffModel.INTGTY_CD_0864);
-                                            gRow++;
-                                            break;
-
-                                        //SEG H
-                                        case "05":
-                                            sl.SelectWorksheet(segH);
-                                            try { ffModel.MOE_CD_2833 = nextLine.Substring(2, 2); } catch { ffModel.MOE_CD_2833 = ""; }
-                                            try { ffModel.SOS_CD_3690_OR_SOSM_CD_2948 = nextLine.Substring(4, 3); } catch { ffModel.SOS_CD_3690_OR_SOSM_CD_2948 = ""; }
-                                            try { ffModel.AAC_2507 = nextLine.Substring(7, 1); } catch { ffModel.AAC_2507 = ""; }
-                                            try { ffModel.QUP_6106 = nextLine.Substring(8, 1); } catch { ffModel.QUP_6106 = ""; }
-                                            try { ffModel.UI_3050 = nextLine.Substring(9, 2); } catch { ffModel.UI_3050 = ""; }
-                                            var dollars = "";
-                                            var dec = "";
-                                            var cents = "";
-                                            try { dollars = nextLine.Substring(11, 9); } catch { dollars = ""; }
-                                            try { dec = nextLine.Substring(20, 1); } catch { dec = ""; }
-                                            try { cents = nextLine.Substring(21, 2); } catch { cents = ""; }
-                                            ffModel.UNIT_PR_7075 = dollars + dec + cents;
-                                            try { ffModel.SLC_2943 = nextLine.Substring(23, 1); } catch { ffModel.SLC_2943 = ""; }
-                                            try { ffModel.CIIC_2863 = nextLine.Substring(24, 1); } catch { ffModel.CIIC_2863 = ""; }
-                                            var repCode = "";
-                                            try
-                                            {
-                                                repCode = nextLine.Substring(25, 1);
-                                            }
-                                            catch
-                                            {
-                                                repCode = "";
-                                            }
-                                            ffModel.REP_CD_DLA_2934 = repCode;
-                                            ffModel.REP_CD_CG_0709 = repCode;
-                                            ffModel.ERRC_CD_AF_2655 = repCode;
-                                            ffModel.RECOV_CD_MC_2891 = repCode;
-                                            ffModel.RECOV_CD_AR_2892 = repCode;
-                                            ffModel.MAT_CTL_NVY_2832 = repCode;
-                                            sl.SetCellValue(hRow, Column, ffModel.MOE_CD_2833);
-                                            sl.SetCellValue(hRow, ++Column, ffModel.SOS_CD_3690_OR_SOSM_CD_2948);
-                                            sl.SetCellValue(hRow, ++Column, ffModel.AAC_2507);
-                                            sl.SetCellValue(hRow, ++Column, ffModel.QUP_6106);
-                                            sl.SetCellValue(hRow, ++Column, ffModel.UI_3050);
-                                            sl.SetCellValue(hRow, ++Column, ffModel.UNIT_PR_7075);
-                                            sl.SetCellValue(hRow, ++Column, ffModel.SLC_2943);
-                                            sl.SetCellValue(hRow, ++Column, ffModel.CIIC_2863);
-                                            sl.SetCellValue(hRow, ++Column, ffModel.REP_CD_DLA_2934);
-                                            sl.SetCellValue(hRow, ++Column, ffModel.REP_CD_CG_0709);
-                                            sl.SetCellValue(hRow, ++Column, ffModel.ERRC_CD_AF_2655);
-                                            sl.SetCellValue(hRow, ++Column, ffModel.RECOV_CD_MC_2891);
-                                            sl.SetCellValue(hRow, ++Column, ffModel.RECOV_CD_AR_2892);
-                                            sl.SetCellValue(hRow, ++Column, ffModel.MAT_CTL_NVY_2832);
-
-                                            //MANAGEMENT CONTROL DATA BASED ON MILITARY BRANCH
-                                            switch (ffModel.MOE_CD_2833)
-                                            {
-                                                //ARMY
-                                                case "DA":
-                                                    Column = 15;
-                                                    var matCatCode = "";
-                                                    try
-                                                    {
-                                                        matCatCode = nextLine.Substring(26, 5);
-                                                    }
-                                                    catch
-                                                    {
-                                                        matCatCode = "";
-                                                    }
-                                                    ffModel.MAJ_MCC_AR_9256 = matCatCode;
-                                                    ffModel.AR_MCC_AP_SUB_2163 = matCatCode;
-                                                    ffModel.AR_MCC_USE_CD_2161 = matCatCode;
-                                                    ffModel.AR_MCC_SG_CD1_2167 = matCatCode;
-                                                    try
-                                                    {
-                                                        ffModel.ACTG_RQMT_AR_2665 = nextLine.Substring(31, 1);
-                                                    }
-                                                    catch
-                                                    {
-                                                        ffModel.ACTG_RQMT_AR_2665 = "";
-                                                    }
-                                                    sl.SetCellValue(hRow, Column, ffModel.MAJ_MCC_AR_9256);
-                                                    sl.SetCellValue(hRow, ++Column, ffModel.AR_MCC_AP_SUB_2163);
-                                                    sl.SetCellValue(hRow, ++Column, ffModel.AR_MCC_USE_CD_2161);
-                                                    sl.SetCellValue(hRow, ++Column, ffModel.AR_MCC_SG_CD1_2167);
-                                                    sl.SetCellValue(hRow, ++Column, ffModel.ACTG_RQMT_AR_2665);
-                                                    break;
-
-                                                //AIR FORCE
-                                                case "DF":
-                                                    Column = 20;
-                                                    try { ffModel.FUND_CD_AF_2695 = nextLine.Substring(26, 2); } catch { ffModel.FUND_CD_AF_2695 = ""; }
-                                                    try { ffModel.BDGT_CD_AF_3765 = nextLine.Substring(28, 1); } catch { ffModel.BDGT_CD_AF_3765 = ""; }
-                                                    try { ffModel.MMAC_AF_2836 = nextLine.Substring(29, 2); } catch { ffModel.MMAC_AF_2836 = ""; }
-                                                    try { ffModel.PVC_AF_0858 = nextLine.Substring(32, 1); } catch { ffModel.PVC_AF_0858 = ""; }
-                                                    sl.SetCellValue(hRow, Column, ffModel.FUND_CD_AF_2695);
-                                                    sl.SetCellValue(hRow, ++Column, ffModel.BDGT_CD_AF_3765);
-                                                    sl.SetCellValue(hRow, ++Column, ffModel.MMAC_AF_2836);
-                                                    sl.SetCellValue(hRow, ++Column, ffModel.PVC_AF_0858);
-                                                    break;
-
-                                                //MARINES
-                                                case "DM":
-                                                    Column = 24;
-                                                    try { ffModel.STRS_ACT_MC_2959 = nextLine.Substring(26, 1); } catch { ffModel.STRS_ACT_MC_2959 = ""; }
-                                                    try { ffModel.CMBT_ESTL_MC_3311 = nextLine.Substring(27, 1); } catch { ffModel.CMBT_ESTL_MC_3311 = ""; }
-                                                    try { ffModel.MAT_MGMT_MC_9257 = nextLine.Substring(28, 1); } catch { ffModel.MAT_MGMT_MC_9257 = ""; }
-                                                    try { ffModel.OPRTL_TST_MC_0572 = nextLine.Substring(29, 1); } catch { ffModel.OPRTL_TST_MC_0572 = ""; }
-                                                    try { ffModel.PHY_CTGY_MC_0573 = nextLine.Substring(30, 1); } catch { ffModel.PHY_CTGY_MC_0573 = ""; }
-                                                    sl.SetCellValue(hRow, Column, ffModel.STRS_ACT_MC_2959);
-                                                    sl.SetCellValue(hRow, ++Column, ffModel.CMBT_ESTL_MC_3311);
-                                                    sl.SetCellValue(hRow, ++Column, ffModel.MAT_MGMT_MC_9257);
-                                                    sl.SetCellValue(hRow, ++Column, ffModel.OPRTL_TST_MC_0572);
-                                                    sl.SetCellValue(hRow, ++Column, ffModel.PHY_CTGY_MC_0573);
-                                                    break;
-
-                                                //NAVY
-                                                case "DN":
-                                                    Column = 31;
-                                                    try { ffModel.COG_CD_NVY_2608 = nextLine.Substring(26, 2); } catch { ffModel.COG_CD_NVY_2608 = ""; }
-                                                    try { ffModel.SMIC_NVY_2834 = nextLine.Substring(28, 2); } catch { ffModel.SMIC_NVY_2834 = ""; }
-                                                    try { ffModel.IRRC_NVY_0132 = nextLine.Substring(30, 2); } catch { ffModel.IRRC_NVY_0132 = ""; }
-                                                    try { ffModel.SP_MAT_CONT_0121 = nextLine.Substring(32, 1); } catch { ffModel.SP_MAT_CONT_0121 = ""; }
-                                                    sl.SetCellValue(hRow, Column, ffModel.COG_CD_NVY_2608);
-                                                    sl.SetCellValue(hRow, ++Column, ffModel.SMIC_NVY_2834);
-                                                    sl.SetCellValue(hRow, ++Column, ffModel.IRRC_NVY_0132);
-                                                    sl.SetCellValue(hRow, ++Column, ffModel.SP_MAT_CONT_0121);
-                                                    break;
-
-                                                //COAST GUARD
-                                                case "GP":
-                                                    Column = 35;
-                                                    try { ffModel.INV_ACT_CG_0708 = nextLine.Substring(26, 1); } catch { ffModel.INV_ACT_CG_0708 = ""; }
-                                                    try { ffModel.SER_NO_CTL_CG_0763 = nextLine.Substring(28, 1); } catch { ffModel.SER_NO_CTL_CG_0763 = ""; }
-                                                    try { ffModel.SP_MAT_CONT_0121 = nextLine.Substring(29, 1); } catch { ffModel.SP_MAT_CONT_0121 = ""; }
-                                                    sl.SetCellValue(hRow, Column, ffModel.INV_ACT_CG_0708);
-                                                    sl.SetCellValue(hRow, ++Column, ffModel.SER_NO_CTL_CG_0763);
-                                                    sl.SetCellValue(hRow, ++Column, ffModel.SP_MAT_CONT_0121);
-                                                    break;
-                                            }
-
-                                            try { ffModel.EFF_DT_2128 = nextLine.Substring(33, 7); } catch { ffModel.EFF_DT_2128 = ""; }
-                                            try { ffModel.USI_SVC_CD_0745 = nextLine.Substring(40, 1); } catch { ffModel.USI_SVC_CD_0745 = ""; }
-                                            try { ffModel.UI_CONV_FAC_3053 = nextLine.Substring(41, 5); } catch { ffModel.UI_CONV_FAC_3053 = ""; }
-                                            var phraseCodeCounter = int.Parse(nextLine.Substring(46, 2));
-                                            text = "";
-                                            index = 48;
-                                            for (int i = 0; i < phraseCodeCounter; i++)
-                                            {
-                                                try
-                                                {
-                                                    text += ffModel.PHRS_CD_2862 = nextLine.Substring(index, 1);
-                                                }
-                                                catch
-                                                {
-                                                    text += "";
-                                                }
-                                                if (i + 1 != phraseCodeCounter)
-                                                {
-                                                    text += "|";
-                                                    index += 48;
-                                                }
-                                                else
-                                                {
-                                                    sl.SetCellValue(hRow, ++Column, text);
-                                                    text = "";
-                                                }
-                                            }
-
-                                            index = 48;
-                                            for (int i = 0; i < phraseCodeCounter; i++)
-                                            {
-                                                try { text += ffModel.PHRS_CD_2862 = nextLine.Substring(index + 1, 1); }
-                                                catch
-                                                {
-                                                    text += "";
-                                                }
-                                                if (i + 1 != phraseCodeCounter)
-                                                {
-                                                    text += "|";
-                                                    index += 48;
-                                                }
-                                                else
-                                                {
-                                                    sl.SetCellValue(hRow, ++Column, text);
-                                                    text = "";
-                                                }
-                                            }
-                                            index = 48;
-                                            for (int i = 0; i < phraseCodeCounter; i++)
-                                            {
-                                                try { text += ffModel.PHRS_CD_PHRS_5240 = nextLine.Substring(index + 2, 36); }
-                                                catch
-                                                {
-                                                    text += "";
-                                                }
-                                                if (i + 1 != phraseCodeCounter)
-                                                {
-                                                    text += "|";
-                                                    index += 48;
-                                                }
-                                                else
-                                                {
-                                                    sl.SetCellValue(hRow, ++Column, text);
-                                                    text = "";
-                                                }
-                                            }
-                                            index = 48;
-                                            for (int i = 0; i < phraseCodeCounter; i++)
-                                            {
-                                                try { text += ffModel.QTY_PER_ASBL_0106 = nextLine.Substring(index + 38, 3); }
-                                                catch
-                                                {
-                                                    text += "";
-                                                }
-                                                if (i + 1 != phraseCodeCounter)
-                                                {
-                                                    text += "|";
-                                                    index += 48;
-                                                }
-                                                else
-                                                {
-                                                    sl.SetCellValue(hRow, ++Column, text);
-                                                    text = "";
-                                                }
-                                            }
-                                            index = 48;
-                                            for (int i = 0; i < phraseCodeCounter; i++)
-                                            {
-                                                try { text += ffModel.UNIT_MEAS_CD_0107 = nextLine.Substring(index + 41, 2); }
-                                                catch
-                                                {
-                                                    text += "";
-                                                }
-                                                if (i + 1 != phraseCodeCounter)
-                                                {
-                                                    text += "|";
-                                                    index += 48;
-                                                }
-                                                else
-                                                {
-                                                    sl.SetCellValue(hRow, ++Column, text);
-                                                    text = "";
-                                                }
-                                            }
-                                            index = 48;
-                                            for (int i = 0; i < phraseCodeCounter; i++)
-                                            {
-                                                try { text += ffModel.OOU_0793 = nextLine.Substring(index + 43, 3); }
-                                                catch
-                                                {
-                                                    text += "";
-                                                }
-                                                if (i + 1 != phraseCodeCounter)
-                                                {
-                                                    text += "|";
-                                                    index += 48;
-                                                }
-                                                else
-                                                {
-                                                    sl.SetCellValue(hRow, ++Column, text);
-                                                    text = "";
-                                                }
-                                            }
-                                            index = 48;
-                                            for (int i = 0; i < phraseCodeCounter; i++)
-                                            {
-                                                try { text += ffModel.JTC_0792 = nextLine.Substring(index + 46, 3); }
-                                                catch
-                                                {
-                                                    text += "";
-                                                }
-                                                if (i + 1 != phraseCodeCounter)
-                                                {
-                                                    text += "|";
-                                                    index += 48;
-                                                }
-                                                else
-                                                {
-                                                    sl.SetCellValue(hRow, ++Column, text);
-                                                    text = "";
-                                                }
-                                            }
-                                            hRow++;
-                                            break;
-
-                                        //SEG W
-                                        case "08":
-                                            sl.SelectWorksheet(segW);
-                                            try { ffModel.PK_DTA_SRC_CD_5148 = nextLine.Substring(2, 1); } catch { ffModel.PK_DTA_SRC_CD_5148 = ""; }
-                                            try { ffModel.PICA_SICA_IND_5099 = nextLine.Substring(3, 1); } catch { ffModel.PICA_SICA_IND_5099 = ""; }
-                                            try { ffModel.INTMD_CTN_QTY_5152 = nextLine.Substring(4, 1); } catch { ffModel.INTMD_CTN_QTY_5152 = ""; }
-                                            try { ffModel.UP_WT_5153 = nextLine.Substring(5, 5); } catch { ffModel.UP_WT_5153 = ""; }
-                                            try { ffModel.UP_SZ_5154 = nextLine.Substring(10, 12); } catch { ffModel.UP_SZ_5154 = ""; }
-                                            try { ffModel.UP_CU_5155 = nextLine.Substring(22, 7); } catch { ffModel.UP_CU_5155 = ""; }
-                                            try { ffModel.PKG_CTGY_CD_5159 = nextLine.Substring(29, 4); } catch { ffModel.PKG_CTGY_CD_5159 = ""; }
-                                            try { ffModel.ITM_TYP_STOR_5156 = nextLine.Substring(33, 1); } catch { ffModel.ITM_TYP_STOR_5156 = ""; }
-                                            try { ffModel.UNPKG_ITM_WT_5157 = nextLine.Substring(34, 5); } catch { ffModel.UNPKG_ITM_WT_5157 = ""; }
-                                            try { ffModel.UNPKG_ITM_DIM_5158 = nextLine.Substring(39, 12); } catch { ffModel.UNPKG_ITM_DIM_5158 = ""; }
-                                            try { ffModel.MTHD_PRSRV_CD_5160 = nextLine.Substring(51, 2); } catch { ffModel.MTHD_PRSRV_CD_5160 = ""; }
-                                            try { ffModel.CLNG_DRY_PRC_5161 = nextLine.Substring(53, 1); } catch { ffModel.CLNG_DRY_PRC_5161 = ""; }
-                                            try { ffModel.PRSRV_MAT_CD_5162 = nextLine.Substring(54, 2); } catch { ffModel.PRSRV_MAT_CD_5162 = ""; }
-                                            try { ffModel.WRAP_MAT_CD_5163 = nextLine.Substring(56, 2); } catch { ffModel.WRAP_MAT_CD_5163 = ""; }
-                                            try { ffModel.CUSH_DUN_MAT_5164 = nextLine.Substring(58, 2); } catch { ffModel.CUSH_DUN_MAT_5164 = ""; }
-                                            try { ffModel.THK_CUSH_DUN_5165 = nextLine.Substring(60, 1); } catch { ffModel.THK_CUSH_DUN_5165 = ""; }
-                                            try { ffModel.UNIT_CTNR_CD_5166 = nextLine.Substring(62, 2); } catch { ffModel.UNIT_CTNR_CD_5166 = ""; }
-                                            try { ffModel.INTMD_CTNR_CD_5167 = nextLine.Substring(64, 2); } catch { ffModel.INTMD_CTNR_CD_5167 = ""; }
-                                            try { ffModel.UNIT_CTNR_LVL_5168 = nextLine.Substring(66, 1); } catch { ffModel.UNIT_CTNR_LVL_5168 = ""; }
-                                            try { ffModel.SP_MKG_CD_5169 = nextLine.Substring(67, 2); } catch { ffModel.SP_MKG_CD_5169 = ""; }
-                                            try { ffModel.LVL_A_PKG_CD_5170 = nextLine.Substring(69, 1); } catch { ffModel.LVL_A_PKG_CD_5170 = ""; }
-                                            try { ffModel.LVL_B_PKG_CD_5171 = nextLine.Substring(70, 1); } catch { ffModel.LVL_B_PKG_CD_5171 = ""; }
-                                            try { ffModel.MINM_PK_RQ_CD_5172 = nextLine.Substring(72, 1); } catch { ffModel.MINM_PK_RQ_CD_5172 = ""; }
-                                            try { ffModel.OPTNL_PRO_IND_5173 = nextLine.Substring(73, 1); } catch { ffModel.OPTNL_PRO_IND_5173 = ""; }
-
-                                            //GET PIPE DELIMITER INDEX
-                                            var line = nextLine.Substring(74);
-                                            var newLength = line.IndexOf('|');
-                                            try { ffModel.SUPMTL_INST_5174 = nextLine.Substring(74, newLength); } catch { ffModel.SUPMTL_INST_5174 = ""; }
-                                            try { ffModel.SPI_NBR_5175 = nextLine.Substring(newLength + 75, 10); } catch { ffModel.SPI_NBR_5175 = ""; }
-                                            try { ffModel.SPI_REV_5176 = nextLine.Substring(newLength + 85, 1); } catch { ffModel.SPI_REV_5176 = ""; }
-                                            try { ffModel.SPI_DT_5177 = nextLine.Substring(newLength + 86, 5); } catch { ffModel.SPI_DT_5177 = ""; }
-                                            try { ffModel.CTNR_NSN_5178 = nextLine.Substring(newLength + 91, 13); } catch { ffModel.CTNR_NSN_5178 = ""; }
-                                            try { ffModel.PKG_DSGN_ACTY_5179 = nextLine.Substring(newLength + 104, 5); } catch { ffModel.PKG_DSGN_ACTY_5179 = ""; }
-                                            sl.SetCellValue(wRow, Column, ffModel.PK_DTA_SRC_CD_5148);
-                                            sl.SetCellValue(wRow, ++Column, ffModel.PICA_SICA_IND_5099);
-                                            sl.SetCellValue(wRow, ++Column, ffModel.INTMD_CTN_QTY_5152);
-                                            sl.SetCellValue(wRow, ++Column, ffModel.UP_WT_5153);
-                                            sl.SetCellValue(wRow, ++Column, ffModel.UP_SZ_5154);
-                                            sl.SetCellValue(wRow, ++Column, ffModel.UP_CU_5155);
-                                            sl.SetCellValue(wRow, ++Column, ffModel.PKG_CTGY_CD_5159);
-                                            sl.SetCellValue(wRow, ++Column, ffModel.ITM_TYP_STOR_5156);
-                                            sl.SetCellValue(wRow, ++Column, ffModel.UNPKG_ITM_WT_5157);
-                                            sl.SetCellValue(wRow, ++Column, ffModel.UNPKG_ITM_DIM_5158);
-                                            sl.SetCellValue(wRow, ++Column, ffModel.MTHD_PRSRV_CD_5160);
-                                            sl.SetCellValue(wRow, ++Column, ffModel.CLNG_DRY_PRC_5161);
-                                            sl.SetCellValue(wRow, ++Column, ffModel.PRSRV_MAT_CD_5162);
-                                            sl.SetCellValue(wRow, ++Column, ffModel.WRAP_MAT_CD_5163);
-                                            sl.SetCellValue(wRow, ++Column, ffModel.CUSH_DUN_MAT_5164);
-                                            sl.SetCellValue(wRow, ++Column, ffModel.THK_CUSH_DUN_5165);
-                                            sl.SetCellValue(wRow, ++Column, ffModel.UNIT_CTNR_CD_5166);
-                                            sl.SetCellValue(wRow, ++Column, ffModel.INTMD_CTNR_CD_5167);
-                                            sl.SetCellValue(wRow, ++Column, ffModel.UNIT_CTNR_LVL_5168);
-                                            sl.SetCellValue(wRow, ++Column, ffModel.SP_MKG_CD_5169);
-                                            sl.SetCellValue(wRow, ++Column, ffModel.LVL_A_PKG_CD_5170);
-                                            sl.SetCellValue(wRow, ++Column, ffModel.LVL_B_PKG_CD_5171);
-                                            sl.SetCellValue(wRow, ++Column, ffModel.MINM_PK_RQ_CD_5172);
-                                            sl.SetCellValue(wRow, ++Column, ffModel.OPTNL_PRO_IND_5173);
-                                            sl.SetCellValue(wRow, ++Column, ffModel.SUPMTL_INST_5174);
-                                            sl.SetCellValue(wRow, ++Column, ffModel.SPI_NBR_5175);
-                                            sl.SetCellValue(wRow, ++Column, ffModel.SPI_REV_5176);
-                                            sl.SetCellValue(wRow, ++Column, ffModel.SPI_DT_5177);
-                                            sl.SetCellValue(wRow, ++Column, ffModel.CTNR_NSN_5178);
-                                            sl.SetCellValue(wRow, ++Column, ffModel.PKG_DSGN_ACTY_5179);
-                                            wRow++;
-                                            break;
+                                        //GET PIPE DELIMITER INDEX
+                                        var line = nextLine.Substring(74);
+                                        var newLength = line.IndexOf('|');
+                                        try { ffModel.SUPMTL_INST_5174 = nextLine.Substring(74, newLength); } catch { ffModel.SUPMTL_INST_5174 = ""; }
+                                        try { ffModel.SPI_NBR_5175 = nextLine.Substring(newLength + 75, 10); } catch { ffModel.SPI_NBR_5175 = ""; }
+                                        try { ffModel.SPI_REV_5176 = nextLine.Substring(newLength + 85, 1); } catch { ffModel.SPI_REV_5176 = ""; }
+                                        try { ffModel.SPI_DT_5177 = nextLine.Substring(newLength + 86, 5); } catch { ffModel.SPI_DT_5177 = ""; }
+                                        try { ffModel.CTNR_NSN_5178 = nextLine.Substring(newLength + 91, 13); } catch { ffModel.CTNR_NSN_5178 = ""; }
+                                        try { ffModel.PKG_DSGN_ACTY_5179 = nextLine.Substring(newLength + 104, 5); } catch { ffModel.PKG_DSGN_ACTY_5179 = ""; }
+                                        sl.SetCellValue(wRow, Column, ffModel.PK_DTA_SRC_CD_5148);
+                                        sl.SetCellValue(wRow, ++Column, ffModel.PICA_SICA_IND_5099);
+                                        sl.SetCellValue(wRow, ++Column, ffModel.INTMD_CTN_QTY_5152);
+                                        sl.SetCellValue(wRow, ++Column, ffModel.UP_WT_5153);
+                                        sl.SetCellValue(wRow, ++Column, ffModel.UP_SZ_5154);
+                                        sl.SetCellValue(wRow, ++Column, ffModel.UP_CU_5155);
+                                        sl.SetCellValue(wRow, ++Column, ffModel.PKG_CTGY_CD_5159);
+                                        sl.SetCellValue(wRow, ++Column, ffModel.ITM_TYP_STOR_5156);
+                                        sl.SetCellValue(wRow, ++Column, ffModel.UNPKG_ITM_WT_5157);
+                                        sl.SetCellValue(wRow, ++Column, ffModel.UNPKG_ITM_DIM_5158);
+                                        sl.SetCellValue(wRow, ++Column, ffModel.MTHD_PRSRV_CD_5160);
+                                        sl.SetCellValue(wRow, ++Column, ffModel.CLNG_DRY_PRC_5161);
+                                        sl.SetCellValue(wRow, ++Column, ffModel.PRSRV_MAT_CD_5162);
+                                        sl.SetCellValue(wRow, ++Column, ffModel.WRAP_MAT_CD_5163);
+                                        sl.SetCellValue(wRow, ++Column, ffModel.CUSH_DUN_MAT_5164);
+                                        sl.SetCellValue(wRow, ++Column, ffModel.THK_CUSH_DUN_5165);
+                                        sl.SetCellValue(wRow, ++Column, ffModel.UNIT_CTNR_CD_5166);
+                                        sl.SetCellValue(wRow, ++Column, ffModel.INTMD_CTNR_CD_5167);
+                                        sl.SetCellValue(wRow, ++Column, ffModel.UNIT_CTNR_LVL_5168);
+                                        sl.SetCellValue(wRow, ++Column, ffModel.SP_MKG_CD_5169);
+                                        sl.SetCellValue(wRow, ++Column, ffModel.LVL_A_PKG_CD_5170);
+                                        sl.SetCellValue(wRow, ++Column, ffModel.LVL_B_PKG_CD_5171);
+                                        sl.SetCellValue(wRow, ++Column, ffModel.MINM_PK_RQ_CD_5172);
+                                        sl.SetCellValue(wRow, ++Column, ffModel.OPTNL_PRO_IND_5173);
+                                        sl.SetCellValue(wRow, ++Column, ffModel.SUPMTL_INST_5174);
+                                        sl.SetCellValue(wRow, ++Column, ffModel.SPI_NBR_5175);
+                                        sl.SetCellValue(wRow, ++Column, ffModel.SPI_REV_5176);
+                                        sl.SetCellValue(wRow, ++Column, ffModel.SPI_DT_5177);
+                                        sl.SetCellValue(wRow, ++Column, ffModel.CTNR_NSN_5178);
+                                        sl.SetCellValue(wRow, ++Column, ffModel.PKG_DSGN_ACTY_5179);
+                                        wRow++;
+                                        Column = 1;
                                     }
                                 }
-                                //STEP 2
-                                Step_2();
-
-                                //INCREMENT TOTAL SHEET ROW COUNTER
-                                totalCounter++;
                             }
+                            reader.BaseStream.Position = 0;
+                            reader.DiscardBufferedData();
+
                             //STEP 3
                             try
                             {
@@ -1688,9 +1758,6 @@ namespace DLA_to_Excel
 
         private void Step_2()
         {
-            //INCREMENT STEP FOR PROGRESS BAR
-            pb.PerformStep();
-
             //INCREMENT SHEET ROW COUNTER
             SheetCounter++;
 
