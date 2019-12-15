@@ -173,7 +173,7 @@ namespace DLA_to_Excel
             var maxRows = 250000;
             var numBooks = TotalRows / maxRows;
             //Number of excel books
-            var bookCounter = 1;
+            var bookCounter = 7;
             var totalCounter = 0;
             var aRow = 1;
             var bRow = 1;
@@ -205,8 +205,7 @@ namespace DLA_to_Excel
                         using (SLDocument sl = new SLDocument())
                         {
                             //SEG A
-                            while (bookCounter <= numBooks && aRow <= maxRows && !reader.EndOfStream &&
-                                  totalCounter <= TotalRows)
+                            while (bookCounter <= numBooks && aRow <= maxRows && !reader.EndOfStream)
                             {
                                 sl.RenameWorksheet(SLDocument.DefaultFirstSheetName, segA); //RECORD TYPE 01
                                 if (aRow == 1)
@@ -295,8 +294,7 @@ namespace DLA_to_Excel
                             FastForward = true;
                             
                             //SEG B
-                            while (bookCounter <= numBooks && bRow <= maxRows && !reader.EndOfStream &&
-                               totalCounter <= TotalRows)
+                            while (bookCounter <= numBooks && bRow <= maxRows && !reader.EndOfStream)
                             {
                                 sl.AddWorksheet(segB);  //RECORD TYPE 02                              
                                 if (bRow == 1)
@@ -541,8 +539,7 @@ namespace DLA_to_Excel
                             FastForward = true;
 
                             //SEG C
-                            while (bookCounter <= numBooks && cRow <= maxRows && !reader.EndOfStream &&
-                                totalCounter <= TotalRows)
+                            while (bookCounter <= numBooks && cRow <= maxRows && !reader.EndOfStream)
                             {
                                 sl.AddWorksheet(segC);  //RECORD TYPE 03
                                 if (cRow == 1)
@@ -840,8 +837,7 @@ namespace DLA_to_Excel
                             FastForward = true;
 
                             //SEG E
-                            while (bookCounter <= numBooks && eRow <= maxRows && !reader.EndOfStream &&
-                                 totalCounter <= TotalRows)
+                            while (bookCounter <= numBooks && eRow <= maxRows && !reader.EndOfStream)
                             {
                                 sl.RenameWorksheet(SLDocument.DefaultFirstSheetName, segA); //RECORD TYPE 01
                                 if (eRow == 1)
@@ -1022,8 +1018,7 @@ namespace DLA_to_Excel
                             FastForward = true;
 
                             //SEG G
-                            while (bookCounter <= numBooks && gRow <= maxRows && !reader.EndOfStream &&
-                                 totalCounter <= TotalRows)
+                            while (bookCounter <= numBooks && gRow <= maxRows && !reader.EndOfStream)
                             {
                                 sl.AddWorksheet(segG);  //RECORD TYPE 09
                                 if (gRow == 1)
@@ -1130,8 +1125,7 @@ namespace DLA_to_Excel
                             FastForward = true;
 
                             //SEG H
-                            while (bookCounter <= numBooks && hRow <= maxRows && !reader.EndOfStream &&
-                              totalCounter <= TotalRows)
+                            while (bookCounter <= numBooks && hRow <= maxRows && !reader.EndOfStream)
                             {
                                 sl.AddWorksheet(segH);  //RECORD TYPE 05
                                 if (hRow == 1)
@@ -1441,8 +1435,7 @@ namespace DLA_to_Excel
                             FastForward = true;
 
                             //SEG W
-                            while (bookCounter <= numBooks && wRow <= maxRows && !reader.EndOfStream &&
-                               totalCounter <= TotalRows)
+                            while (bookCounter <= numBooks && wRow <= maxRows && !reader.EndOfStream)
                             {
                                 sl.AddWorksheet(segW);  //RECORD TYPE 08
                                 if (wRow == 1)
