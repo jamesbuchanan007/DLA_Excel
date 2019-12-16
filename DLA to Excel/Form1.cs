@@ -166,7 +166,7 @@ namespace DLA_to_Excel
         }
         #endregion
 
-        #region FLISFOIA
+        #region FLISFOIA - CHECKED
         private void FLISFOIA()
         {
             //Get # Books needed that is less than max excel row (250,000)
@@ -292,7 +292,7 @@ namespace DLA_to_Excel
                             reader.BaseStream.Position = 0;
                             reader.DiscardBufferedData();
                             FastForward = true;
-                            
+
                             //SEG B
                             while (bookCounter <= numBooks && bRow <= maxRows && !reader.EndOfStream)
                             {
@@ -350,7 +350,7 @@ namespace DLA_to_Excel
                                             {
                                             }
                                         }
-                                        sl.SetCellValue(bRow,Column,text.ToString());
+                                        sl.SetCellValue(bRow, Column, text.ToString());
                                         text.Clear();
                                         Column++;
                                         for (int i = 0; i < numMoeRules; i++)
@@ -375,7 +375,7 @@ namespace DLA_to_Excel
                                             try
                                             {
                                                 text.Append(ffModel.AMSC_2876 = nextLine.Substring(index + 5, 1));
-                                                if (i + 1 != numMoeRules) text.Append("|"); 
+                                                if (i + 1 != numMoeRules) text.Append("|");
                                                 index += 64;
                                             }
                                             catch
@@ -650,7 +650,7 @@ namespace DLA_to_Excel
                                                 text.Append(ffModel.DAC_2640 = nextLine.Substring(index + 3, 1));
                                             }
                                             catch
-                                            {                                             
+                                            {
                                             }
                                             if (nextLine.Length > index + 54)
                                             {
@@ -985,7 +985,7 @@ namespace DLA_to_Excel
                                                     index += 24;
                                                 }
                                             }
-                                            catch {}
+                                            catch { }
                                         }
 
                                         sl.SetCellValue(eRow, ++Column, text.ToString());
@@ -1002,7 +1002,7 @@ namespace DLA_to_Excel
                                                     index += 24;
                                                 }
                                             }
-                                            catch{}
+                                            catch { }
                                         }
                                         sl.SetCellValue(eRow, ++Column, text.ToString());
                                         text.Clear();
@@ -1358,7 +1358,7 @@ namespace DLA_to_Excel
                                                     index += 48;
                                                 }
                                             }
-                                            catch{}
+                                            catch { }
                                         }
                                         sl.SetCellValue(hRow, ++Column, text.ToString());
                                         text.Clear();
@@ -1374,7 +1374,7 @@ namespace DLA_to_Excel
                                                     index += 48;
                                                 }
                                             }
-                                            catch{}
+                                            catch { }
                                         }
                                         sl.SetCellValue(hRow, ++Column, text.ToString());
                                         text.Clear();
@@ -1390,7 +1390,7 @@ namespace DLA_to_Excel
                                                     index += 48;
                                                 }
                                             }
-                                            catch{}
+                                            catch { }
                                         }
                                         sl.SetCellValue(hRow, ++Column, text.ToString());
                                         text.Clear();
@@ -1406,7 +1406,7 @@ namespace DLA_to_Excel
                                                     index += 48;
                                                 }
                                             }
-                                            catch{}
+                                            catch { }
                                         }
                                         sl.SetCellValue(hRow, ++Column, text.ToString());
                                         text.Clear();
@@ -1422,7 +1422,7 @@ namespace DLA_to_Excel
                                                     index += 48;
                                                 }
                                             }
-                                            catch{}
+                                            catch { }
                                         }
                                         text.Clear();
                                         hRow++;
@@ -1598,11 +1598,12 @@ namespace DLA_to_Excel
         }
         #endregion
 
-        #region FCAN-SEGK
+        #region FCAN-SEGK - CHECKED
         private void FCANSEGK()
         {
+            var maxRows = 250000;
             //Get # Books needed that is less than max excel row (1,000,000)
-            var numBooks = TotalRows / 250000;
+            var numBooks = TotalRows / maxRows;
             //Number of excel books
             var bookCounter = 0;
             var totalCounter = 0;
@@ -1626,7 +1627,7 @@ namespace DLA_to_Excel
                         using (SLDocument sl = new SLDocument())
                         {
                             sl.RenameWorksheet(SLDocument.DefaultFirstSheetName, SlSheetName);
-                            while (bookCounter <= numBooks && SheetCounter < 250000 && !reader.EndOfStream &&
+                            while (bookCounter <= numBooks && SheetCounter < maxRows && !reader.EndOfStream &&
                                    totalCounter <= TotalRows)
                             {
                                 //STEP 1
@@ -1642,7 +1643,7 @@ namespace DLA_to_Excel
                                     while (FastForward)
                                     {
                                         //Used to 'jump' to row
-                                        var fastForwardCounter = bookCounter > 0 ? bookCounter * 250000 : 0;
+                                        var fastForwardCounter = bookCounter > 0 ? bookCounter * maxRows : 0;
 
                                         //Jump to row first
                                         for (int i = 0; i < fastForwardCounter; i++)
@@ -1660,11 +1661,12 @@ namespace DLA_to_Excel
                                     sl.SetCellValue(Row, ++Column, fsModel.FSC);
                                     sl.SetCellValue(Row, ++Column, fsModel.NIIN);
                                     sl.SetCellValue(Row, ++Column, fsModel.REPLACEMENT_NSN);
-
                                 }
 
                                 //STEP 2
                                 Step_2();
+                                //INCREMENT STEP FOR PROGRESS BAR
+                                pb.PerformStep();
 
                                 //INCREMENT TOTAL SHEET ROW COUNTER
                                 totalCounter++;
@@ -1743,12 +1745,13 @@ namespace DLA_to_Excel
 
         #endregion
 
-        #region FCAGE
+        #region FCAGE - CHECKED
 
         private void FCAGE()
         {
+            var maxRows = 250000;
             //Get # Books needed that is less than max excel row (1,000,000)
-            var numBooks = TotalRows / 250000;
+            var numBooks = TotalRows / maxRows;
 
             //Number of excel books
             var bookCounter = 0;
@@ -1782,7 +1785,6 @@ namespace DLA_to_Excel
                     FastForward = true;
                     //NewXlApp();
 
-
                     //Initialize class
                     var fcModel = new FCAGE();
                     using (var stream = new FileStream(FileLocation, FileMode.Open, FileAccess.Read))
@@ -1794,7 +1796,7 @@ namespace DLA_to_Excel
                         {
                             sl.RenameWorksheet(SLDocument.DefaultFirstSheetName, SlSheetName);
 
-                            while (bookCounter <= numBooks && SheetCounter < 250000 && !reader.EndOfStream &&
+                            while (bookCounter <= numBooks && SheetCounter < maxRows && !reader.EndOfStream &&
                                    totalCounter <= TotalRows)
                             {
                                 if (SheetCounter == 0)
@@ -1805,7 +1807,6 @@ namespace DLA_to_Excel
                                     for (int i = 1; i < fCageList.Length; i++)
                                     {
                                         sl.SetCellValue(Row, i + 1, fCageList[i]);
-                                        //Worksheet.Cells[Row, i + 1] = fCageList[i];
                                     }
                                 }
                                 else
@@ -1813,7 +1814,7 @@ namespace DLA_to_Excel
                                     while (FastForward)
                                     {
                                         //Used to 'jump' to row
-                                        var fastForwardCounter = bookCounter > 0 ? bookCounter * 250000 : 0;
+                                        var fastForwardCounter = bookCounter > 0 ? bookCounter * maxRows : 0;
 
                                         //Jump to row first
                                         for (int i = 0; i < fastForwardCounter; i++)
@@ -1865,15 +1866,15 @@ namespace DLA_to_Excel
                                         fcModel.FOREIGN_PHONE_NUMBER = "";
                                         fcModel.FOREIGN_FAX_NUMBER = "";
 
-                                        sl.SetCellValue(Row, ++Column, "\t" + fcModel.DOMESTIC_STREET_ADDRESS_1.Trim());
-                                        sl.SetCellValue(Row, ++Column, "\t" + fcModel.DOMESTIC_STREET_ADDRESS_2.Trim());
-                                        sl.SetCellValue(Row, ++Column, "\t" + fcModel.DOMESTIC_POST_OFFICE_BOX.Trim());
-                                        sl.SetCellValue(Row, ++Column, "\t" + fcModel.DOMESTIC_CITY.Trim());
-                                        sl.SetCellValue(Row, ++Column, "\t" + fcModel.DOMESTIC_STATE.Trim());
-                                        sl.SetCellValue(Row, ++Column, "\t" + fcModel.DOMESTIC_ZIP_CODE.Trim());
-                                        sl.SetCellValue(Row, ++Column, "\t" + fcModel.DOMESTIC_COUNTRY.Trim());
-                                        sl.SetCellValue(Row, ++Column, "\t" + fcModel.DOMESTIC_PHONE_FAX_NUMBER_1.Trim());
-                                        sl.SetCellValue(Row, ++Column, "\t" + fcModel.DOMESTIC_PHONE_FAX_NUMBER_2.Trim());
+                                        sl.SetCellValue(Row, ++Column, fcModel.DOMESTIC_STREET_ADDRESS_1.Trim());
+                                        sl.SetCellValue(Row, ++Column, fcModel.DOMESTIC_STREET_ADDRESS_2.Trim());
+                                        sl.SetCellValue(Row, ++Column, fcModel.DOMESTIC_POST_OFFICE_BOX.Trim());
+                                        sl.SetCellValue(Row, ++Column, fcModel.DOMESTIC_CITY.Trim());
+                                        sl.SetCellValue(Row, ++Column, fcModel.DOMESTIC_STATE.Trim());
+                                        sl.SetCellValue(Row, ++Column, fcModel.DOMESTIC_ZIP_CODE.Trim());
+                                        sl.SetCellValue(Row, ++Column, fcModel.DOMESTIC_COUNTRY.Trim());
+                                        sl.SetCellValue(Row, ++Column, fcModel.DOMESTIC_PHONE_FAX_NUMBER_1.Trim());
+                                        sl.SetCellValue(Row, ++Column, fcModel.DOMESTIC_PHONE_FAX_NUMBER_2.Trim());
 
                                         sl.SetCellValue(Row, ++Column, "");
                                         sl.SetCellValue(Row, ++Column, "");
@@ -1916,15 +1917,15 @@ namespace DLA_to_Excel
                                         sl.SetCellValue(Row, ++Column, "");
                                         sl.SetCellValue(Row, ++Column, "");
 
-                                        sl.SetCellValue(Row, ++Column, "\t" + fcModel.FOREIGN_STREET_ADDRESS_1.Trim());
-                                        sl.SetCellValue(Row, ++Column, "\t" + fcModel.FOREIGN_STREET_ADDRESS_2.Trim());
-                                        sl.SetCellValue(Row, ++Column, "\t" + fcModel.FOREIGN_POST_OFFICE_BOX.Trim());
-                                        sl.SetCellValue(Row, ++Column, "\t" + fcModel.FOREIGN_CITY.Trim());
-                                        sl.SetCellValue(Row, ++Column, "\t" + fcModel.FOREIGN_PROVINCE.Trim());
-                                        sl.SetCellValue(Row, ++Column, "\t" + fcModel.FOREIGN_COUNTRY.Trim());
-                                        sl.SetCellValue(Row, ++Column, "\t" + fcModel.FOREIGN_POSTAL_ZONE.Trim());
-                                        sl.SetCellValue(Row, ++Column, "\t" + fcModel.FOREIGN_PHONE_NUMBER.Trim());
-                                        sl.SetCellValue(Row, ++Column, "\t" + fcModel.FOREIGN_FAX_NUMBER.Trim());
+                                        sl.SetCellValue(Row, ++Column, fcModel.FOREIGN_STREET_ADDRESS_1.Trim());
+                                        sl.SetCellValue(Row, ++Column, fcModel.FOREIGN_STREET_ADDRESS_2.Trim());
+                                        sl.SetCellValue(Row, ++Column, fcModel.FOREIGN_POST_OFFICE_BOX.Trim());
+                                        sl.SetCellValue(Row, ++Column, fcModel.FOREIGN_CITY.Trim());
+                                        sl.SetCellValue(Row, ++Column, fcModel.FOREIGN_PROVINCE.Trim());
+                                        sl.SetCellValue(Row, ++Column, fcModel.FOREIGN_COUNTRY.Trim());
+                                        sl.SetCellValue(Row, ++Column, fcModel.FOREIGN_POSTAL_ZONE.Trim());
+                                        sl.SetCellValue(Row, ++Column, fcModel.FOREIGN_PHONE_NUMBER.Trim());
+                                        sl.SetCellValue(Row, ++Column, fcModel.FOREIGN_FAX_NUMBER.Trim());
                                     }
 
                                     fcModel.CAO_CODE = strList[15];
@@ -1945,77 +1946,37 @@ namespace DLA_to_Excel
                                     fcModel.FORMER_NAME_1 = strList[30];
                                     fcModel.FORMER_NAME_2 = strList[31];
 
-                                    sl.SetCellValue(Row, ++Column, "\t" + fcModel.CAO_CODE.Trim());
-                                    sl.SetCellValue(Row, ++Column, "\t" + fcModel.ADP_CODE.Trim());
-                                    sl.SetCellValue(Row, ++Column, "\t" + fcModel.STATUS_CODE.Trim());
-                                    sl.SetCellValue(Row, ++Column, "\t" + fcModel.ASSOCIATION_CODE.Trim());
-                                    sl.SetCellValue(Row, ++Column, "\t" + fcModel.TYPE_CODE.Trim());
-                                    sl.SetCellValue(Row, ++Column, "\t" + fcModel.AFFILIATION_CODE.Trim());
-                                    sl.SetCellValue(Row, ++Column, "\t" + fcModel.SIZE_OF_BUSINESS_CODE.Trim());
-                                    sl.SetCellValue(Row, ++Column, "\t" + fcModel.PRIMARY_BUSINESS_CATEGORY.Trim());
-                                    sl.SetCellValue(Row, ++Column, "\t" + fcModel.TYPE_OF_BUSINESS_CODE.Trim());
-                                    sl.SetCellValue(Row, ++Column, "\t" + fcModel.WOMAN_OWNED_BUSINESS.Trim());
-                                    sl.SetCellValue(Row, ++Column, "\t" + fcModel.STANDARD_INDUSTRIAL_1.Trim());
-                                    sl.SetCellValue(Row, ++Column, "\t" + fcModel.STANDARD_INDUSTRIAL_2.Trim());
-                                    sl.SetCellValue(Row, ++Column, "\t" + fcModel.STANDARD_INDUSTRIAL_3.Trim());
-                                    sl.SetCellValue(Row, ++Column, "\t" + fcModel.STANDARD_INDUSTRIAL_4.Trim());
-                                    sl.SetCellValue(Row, ++Column, "\t" + fcModel.REPLACEMENT_CAGE.Trim());
-                                    sl.SetCellValue(Row, ++Column, "\t" + fcModel.FORMER_NAME_1.Trim());
-                                    sl.SetCellValue(Row, ++Column, "\t" + fcModel.FORMER_NAME_2.Trim());
+                                    sl.SetCellValue(Row, ++Column, fcModel.CAO_CODE.Trim());
+                                    sl.SetCellValue(Row, ++Column, fcModel.ADP_CODE.Trim());
+                                    sl.SetCellValue(Row, ++Column, fcModel.STATUS_CODE.Trim());
+                                    sl.SetCellValue(Row, ++Column, fcModel.ASSOCIATION_CODE.Trim());
+                                    sl.SetCellValue(Row, ++Column, fcModel.TYPE_CODE.Trim());
+                                    sl.SetCellValue(Row, ++Column, fcModel.AFFILIATION_CODE.Trim());
+                                    sl.SetCellValue(Row, ++Column, fcModel.SIZE_OF_BUSINESS_CODE.Trim());
+                                    sl.SetCellValue(Row, ++Column, fcModel.PRIMARY_BUSINESS_CATEGORY.Trim());
+                                    sl.SetCellValue(Row, ++Column, fcModel.TYPE_OF_BUSINESS_CODE.Trim());
+                                    sl.SetCellValue(Row, ++Column, fcModel.WOMAN_OWNED_BUSINESS.Trim());
+                                    sl.SetCellValue(Row, ++Column, fcModel.STANDARD_INDUSTRIAL_1.Trim());
+                                    sl.SetCellValue(Row, ++Column, fcModel.STANDARD_INDUSTRIAL_2.Trim());
+                                    sl.SetCellValue(Row, ++Column, fcModel.STANDARD_INDUSTRIAL_3.Trim());
+                                    sl.SetCellValue(Row, ++Column, fcModel.STANDARD_INDUSTRIAL_4.Trim());
+                                    sl.SetCellValue(Row, ++Column, fcModel.REPLACEMENT_CAGE.Trim());
+                                    sl.SetCellValue(Row, ++Column, fcModel.FORMER_NAME_1.Trim());
+                                    sl.SetCellValue(Row, ++Column, fcModel.FORMER_NAME_2.Trim());
                                 }
+                                Step_2();
 
                                 //INCREMENT STEP FOR PROGRESS BAR
                                 pb.PerformStep();
 
-                                //INCREMENT SHEET ROW COUNTER
-                                SheetCounter++;
-
                                 //INCREMENT TOTAL SHEET ROW COUNTER
                                 totalCounter++;
-
-                                //RESET COLUMN COUNT
-                                Column = 1;
-
-                                //INCREMENT ROW
-                                Row++;
                             }
-
-                            //RESET FOR NEW SHEET
-                            //Reset Row
-                            Row = 1;
-                            Column = 1;
-
-                            //Reset sheet counter...should never go over 250,000 rows
-                            SheetCounter = 0;
-
-                            //Re-initiate Fast Forward counter
-                            FastForward = true;
-
-                            try
-                            {
-                                CheckIfFolderExists();
-                                CompleteFilePath = FolderDestination + @"\" + SheetName + "_" +
-                                                   DateTime.Now.ToString("yyyy") + "_" + DateTime.Now.ToString("MMM") +
-                                                   ".xlsx";
-
-                                sl.SaveAs(CompleteFilePath);
-                                SendToTimerFile();
-                                bookCounter++;
-
-                                //CloseExcelApplication();
-                                //MessageBox.Show("Book " + bookCounter + " finished.");
-                            }
-                            catch (Exception e)
-                            {
-                                MessageBox.Show("Error.\n\r" + e, "DLA to Excel", MessageBoxButtons.OK,
-                                    MessageBoxIcon.Exclamation);
-                                System.Windows.Forms.Application.Exit();
-                            }
+                            Step_3(sl);
+                            bookCounter++;
                         }
-
                     }
                 }
-
                 SuccessMessage();
             }
             catch (Exception e)
@@ -2041,95 +2002,147 @@ namespace DLA_to_Excel
 
         #endregion
 
-        #region COLXREF
+        #region COLXREF - CHECKED
 
         private void COLXREF()
         {
+            var maxRows = 250000;
+            //Get # Books needed that is less than max excel row (1,000,000)
+            var numBooks = TotalRows / maxRows;
+            //Number of excel books
+            var bookCounter = 0;
             var totalCounter = 0;
+            Row = 1;
+            Column = 1;
             try
             {
-                TimeStart = DateTime.Now;
-                lblStart.Text = "Start: " + TimeStart.ToString("h:mm:ss tt");
-                NewXlApp();
-                var cxModel = new COLXREF();
-                UpdateSheetNames(0);
-
-                using (var stream = new FileStream(FileLocation, FileMode.Open, FileAccess.Read))
-                using (var reader = new StreamReader(stream))
+                while (bookCounter >= numBooks)
                 {
-                    while (!reader.EndOfStream)
+                    TimeStart = DateTime.Now;
+                    lblStart.Text = "Start: " + TimeStart.ToString("h:mm:ss tt");
+                    FastForward = true;
+                    var cxModel = new COLXREF();
+                    using (var stream = new FileStream(FileLocation, FileMode.Open, FileAccess.Read))
+                    using (var reader = new StreamReader(stream))
                     {
-                        if (SheetCounter == 0)
+                        UpdateSheetNames(bookCounter);
+                        using (SLDocument sl = new SLDocument())
                         {
-                            Worksheet.Cells[Row, Column] = "NAME";
-                            Worksheet.Cells[Row, ++Column] = "ITEM_NAME_CODE_1";
-                            Worksheet.Cells[Row, ++Column] = "ITEM_NAME_CODE_2";
-                            Worksheet.Cells[Row, ++Column] = "ITEM_NAME_CODE_3";
-                            Worksheet.Cells[Row, ++Column] = "ITEM_NAME_CODE_4";
-                            Worksheet.Cells[Row, ++Column] = "ITEM_NAME_CODE_5";
+                            sl.RenameWorksheet(SLDocument.DefaultFirstSheetName, SlSheetName);
+                            while (bookCounter <= numBooks && SheetCounter < maxRows && !reader.EndOfStream &&
+                                   totalCounter <= TotalRows)
+                            {
+                                //STEP 1
+                                if (SheetCounter == 0)
+                                {
+                                    sl.SetCellValue(Row, Column, "NAME");
+                                    sl.SetCellValue(Row, ++Column, "ITEM_NAME_CODE_1");
+                                    sl.SetCellValue(Row, ++Column, "ITEM_NAME_CODE_2");
+                                    sl.SetCellValue(Row, ++Column, "ITEM_NAME_CODE_3");
+                                    sl.SetCellValue(Row, ++Column, "ITEM_NAME_CODE_4");
+                                    sl.SetCellValue(Row, ++Column, "ITEM_NAME_CODE_5");
+                                }
+                                else
+                                {
+                                    while (FastForward)
+                                    {
+                                        //Used to 'jump' to row
+                                        var fastForwardCounter = bookCounter > 0 ? bookCounter * maxRows : 0;
+
+                                        //Jump to row first
+                                        for (int i = 0; i < fastForwardCounter; i++)
+                                        {
+                                            reader.ReadLine();
+                                        }
+
+                                        FastForward = false;
+                                    }
+
+                                    var nextline = reader.ReadLine();
+                                    cxModel.NAME = nextline.Substring(0, 32);
+                                    try
+                                    {
+                                        cxModel.ITEM_NAME_CODE_1 = nextline.Substring(32, 5);
+                                    }
+                                    catch
+                                    {
+                                        cxModel.ITEM_NAME_CODE_1 = "";
+                                    }
+
+                                    try
+                                    {
+                                        cxModel.ITEM_NAME_CODE_2 = nextline.Substring(38, 5);
+                                    }
+                                    catch
+                                    {
+                                        cxModel.ITEM_NAME_CODE_2 = "";
+                                    }
+
+                                    try
+                                    {
+                                        cxModel.ITEM_NAME_CODE_3 = nextline.Substring(43, 5);
+                                    }
+                                    catch
+                                    {
+                                        cxModel.ITEM_NAME_CODE_3 = "";
+                                    }
+
+                                    try
+                                    {
+                                        cxModel.ITEM_NAME_CODE_4 = nextline.Substring(48, 5);
+                                    }
+                                    catch
+                                    {
+                                        cxModel.ITEM_NAME_CODE_4 = "";
+                                    }
+
+                                    try
+                                    {
+                                        cxModel.ITEM_NAME_CODE_5 = nextline.Substring(53, 5);
+                                    }
+                                    catch
+                                    {
+                                        cxModel.ITEM_NAME_CODE_5 = "";
+                                    }
+
+                                    sl.SetCellValue(Row, Column, cxModel.NAME);
+                                    sl.SetCellValue(Row, ++Column, cxModel.ITEM_NAME_CODE_1);
+                                    sl.SetCellValue(Row, ++Column, cxModel.ITEM_NAME_CODE_2);
+                                    sl.SetCellValue(Row, ++Column, cxModel.ITEM_NAME_CODE_3);
+                                    sl.SetCellValue(Row, ++Column, cxModel.ITEM_NAME_CODE_4);
+                                    sl.SetCellValue(Row, ++Column, cxModel.ITEM_NAME_CODE_5);
+                                } //STEP 2
+
+                                Step_2();
+
+                                //INCREMENT TOTAL SHEET ROW COUNTER
+                                totalCounter++;
+                            }
+
+                            //STEP 3
+                            try
+                            {
+                                Step_3(sl);
+                                bookCounter++;
+                            }
+                            catch (Exception e)
+                            {
+                                MessageBox.Show("Error.\n\r" + e, "DLA to Excel", MessageBoxButtons.OK,
+                                    MessageBoxIcon.Exclamation);
+                            }
                         }
-                        else
-                        {
-                            var nextline = reader.ReadLine();
-                            cxModel.NAME = nextline.Substring(0, 32);
-                            try { cxModel.ITEM_NAME_CODE_1 = nextline.Substring(32, 5); } catch { cxModel.ITEM_NAME_CODE_1 = ""; }
-                            try { cxModel.ITEM_NAME_CODE_2 = nextline.Substring(38, 5); } catch { cxModel.ITEM_NAME_CODE_2 = ""; }
-                            try { cxModel.ITEM_NAME_CODE_3 = nextline.Substring(43, 5); } catch { cxModel.ITEM_NAME_CODE_3 = ""; }
-                            try { cxModel.ITEM_NAME_CODE_4 = nextline.Substring(48, 5); } catch { cxModel.ITEM_NAME_CODE_4 = ""; }
-                            try { cxModel.ITEM_NAME_CODE_5 = nextline.Substring(53, 5); } catch { cxModel.ITEM_NAME_CODE_5 = ""; }
-
-                            //ADD TO WORK SHEET
-                            Worksheet.Cells[Row, Column] = "\t" + cxModel.NAME.Trim();
-                            Worksheet.Cells[Row, ++Column] = "\t" + cxModel.ITEM_NAME_CODE_1.Trim();
-                            Worksheet.Cells[Row, ++Column] = "\t" + cxModel.ITEM_NAME_CODE_2.Trim();
-                            Worksheet.Cells[Row, ++Column] = "\t" + cxModel.ITEM_NAME_CODE_3.Trim();
-                            Worksheet.Cells[Row, ++Column] = "\t" + cxModel.ITEM_NAME_CODE_4.Trim();
-                            Worksheet.Cells[Row, ++Column] = "\t" + cxModel.ITEM_NAME_CODE_5.Trim();
-                        }
-
-                        ;
-                        //INCREMENT STEP FOR PROGRESS BAR
-                        pb.PerformStep();
-
-                        //INCREMENT SHEET ROW COUNTER
-                        SheetCounter++;
-
-                        //INCREMENT TOTAL SHEET ROW COUNTER
-                        totalCounter++;
-
-                        //RESET COLUMN COUNT
-                        Column = 1;
-
-                        //INCREMENT ROW
-                        Row++;
-                    }
-
-                    try
-                    {
-                        CompleteFilePath = FolderDestination + @"\" + SheetName + "_" +
-                                           DateTime.Now.ToString("yyyy") + "_" + DateTime.Now.ToString("MMM") +
-                                           ".xlsx";
-
-                        CloseExcelApplication();
-                        //MessageBox.Show("Book " + bookCounter + " finished.");
-                    }
-                    catch (Exception e)
-                    {
-                        MessageBox.Show("Error.\n\r" + e, "DLA to Excel", MessageBoxButtons.OK,
-                            MessageBoxIcon.Exclamation);
-                        System.Windows.Forms.Application.Exit();
                     }
                 }
 
                 SuccessMessage();
             }
-
             catch (Exception e)
             {
-                MessageBox.Show("Error...\r\n" + e.ToString(), "DLA to Excel", MessageBoxButtons.OK,
-                    MessageBoxIcon.Error);
+                Console.WriteLine(e);
+                throw;
             }
         }
+
         #endregion
 
         #region Check For Empty Fields
@@ -2162,15 +2175,16 @@ namespace DLA_to_Excel
 
         #endregion
 
-        #region CHARDAT
+        #region CHARDAT - CHECKED
 
         private void CHARDAT()
         {
-            //Get # Books needed that is less than max excel row (1,000,000)
-            var numBooks = TotalRows / 1000000;
-            //Number of excel books
+            var maxRows = 250000;
+            var numBooks = TotalRows / maxRows;
             var bookCounter = 0;
             var totalCounter = 0;
+            Row = 1;
+            Column = 1;
 
             try
             {
@@ -2179,8 +2193,6 @@ namespace DLA_to_Excel
                     TimeStart = DateTime.Now;
                     lblStart.Text = "Start: " + TimeStart.ToString("h:mm:ss tt");
                     FastForward = true;
-                    NewXlApp();
-
                     //Initialize class
                     var cdModel = new CHARDAT();
 
@@ -2189,169 +2201,144 @@ namespace DLA_to_Excel
                     {
                         UpdateSheetNames(bookCounter);
 
-                        while (bookCounter <= numBooks && SheetCounter < 1000000 && !reader.EndOfStream &&
-                               totalCounter <= TotalRows)
+                        using (SLDocument sl = new SLDocument())
                         {
-                            if (SheetCounter == 0)
+                            sl.RenameWorksheet(SLDocument.DefaultFirstSheetName, SlSheetName);
+                            while (bookCounter <= numBooks && SheetCounter < maxRows && !reader.EndOfStream &&
+                                   totalCounter <= TotalRows)
                             {
-                                Worksheet.Cells[Row, Column] = "FEDERAL_SUPPLY_CLASS";
-                                Worksheet.Cells[Row, ++Column] = "NATIONAL_STOCK_NUMBER";
-                                Worksheet.Cells[Row, ++Column] = "ITEM_NAME_CODE";
-                                Worksheet.Cells[Row, ++Column] = "ITEM_NAME";
-                                Worksheet.Cells[Row, ++Column] = "MRC|DECODED_MRC|MRC_REPLY";
-                                Worksheet.Cells[Row, ++Column] = "ENAC_CODES";
+                                if (SheetCounter == 0)
+                                {
+                                    sl.SetCellValue(Row, Column, "FEDERAL_SUPPLY_CLASS");
+                                    sl.SetCellValue(Row, ++Column, "NATIONAL_STOCK_NUMBER");
+                                    sl.SetCellValue(Row, ++Column, "ITEM_NAME_CODE");
+                                    sl.SetCellValue(Row, ++Column, "ITEM_NAME");
+                                    sl.SetCellValue(Row, ++Column, "MRC|DECODED_MRC|MRC_REPLY");
+                                    sl.SetCellValue(Row, ++Column, "ENAC_CODES");
+                                }
+                                else
+                                {
+                                    while (FastForward)
+                                    {
+                                        var fastForwardCounter = maxRows;
+
+                                        //Jump to row first
+                                        for (int i = 0; i < fastForwardCounter; i++)
+                                        {
+                                            reader.ReadLine();
+                                        }
+
+                                        FastForward = false;
+                                    }
+
+                                    var nextLine = reader.ReadLine();
+                                    var numMrcs = 0;
+                                    var fullMrc = new StringBuilder("");
+                                    var fullEnac = new StringBuilder("");
+                                    var decodedMrcLength = 0;
+                                    var mrcReplyLength = 0;
+                                    var startIndex = 0;
+
+                                    cdModel.FEDERAL_SUPPLY_CLASS = nextLine.Substring(0, 4);
+                                    cdModel.NATIONAL_STOCK_NUMBER = nextLine.Substring(4, 9);
+                                    cdModel.ITEM_NAME_CODE = nextLine.Substring(13, 5);
+
+                                    var itemCharacters = int.Parse(nextLine.Substring(18, 2));
+                                    cdModel.ITEM_NAME = nextLine.Substring(20, itemCharacters);
+                                    numMrcs = int.Parse(nextLine.Substring(itemCharacters + 20, 4));
+
+                                    startIndex = itemCharacters + 20 + 4;
+
+                                    //MULTIPLE MRC | DECODED MRCs | MRC REPLIES - PIPELINE DELIMITED
+                                    for (int i = 0; i < numMrcs; i++)
+                                    {
+                                        fullMrc.Append(nextLine.Substring(startIndex, 4) + " | ");
+                                        try
+                                        {
+                                            decodedMrcLength = int.Parse(nextLine.Substring(startIndex + 4, 4));
+                                        }
+                                        catch
+                                        {
+                                        }
+
+                                        var decodedMrc = new StringBuilder("");
+                                        decodedMrc.Append(nextLine.Substring(startIndex + 8, decodedMrcLength));
+                                        fullMrc.Append(decodedMrc);
+                                        fullMrc.Append("|");
+
+                                        mrcReplyLength = int.Parse(nextLine.Substring(startIndex + 8 + decodedMrcLength,
+                                            4));
+
+                                        var fullMrcReply = nextLine.Substring(startIndex + 8 + decodedMrcLength + 4);
+                                        fullMrc.Append(fullMrcReply);
+                                        fullMrc.Append("|");
+
+                                        startIndex = startIndex + 12 + decodedMrcLength + mrcReplyLength;
+                                    }
+
+                                    //MULTIPLE ENAC CODES
+                                    var enacCounter = 0;
+                                    var enacStartIndex = 2;
+
+                                    //Go to next line
+                                    nextLine = reader.ReadLine();
+
+                                    enacCounter = int.Parse(nextLine.Substring(0, 2));
+
+                                    for (int i = 0; i < enacCounter; i++)
+                                    {
+                                        //IF FIRST ROUND OF ENAC CODES or LAST ENAC CODE
+                                        if (i == 0)
+                                        {
+                                            fullEnac.Append(nextLine.Substring(enacStartIndex, 2));
+                                            enacStartIndex += 2;
+                                            continue;
+                                        }
+
+                                        if (enacCounter - 1 == i && i > 0)
+                                        {
+                                            fullEnac.Append(nextLine.Substring(enacStartIndex, 2));
+                                        }
+                                        else
+                                        {
+                                            fullEnac.Append(nextLine.Substring(enacStartIndex, 2));
+                                            fullEnac.Append("|");
+                                        }
+
+                                        enacStartIndex = +2;
+                                    }
+
+                                    //ADD TO WORK SHEET
+                                    sl.SetCellValue(Row, Column, cdModel.FEDERAL_SUPPLY_CLASS);
+                                    sl.SetCellValue(Row, Column, cdModel.NATIONAL_STOCK_NUMBER);
+                                    sl.SetCellValue(Row, Column, cdModel.ITEM_NAME_CODE);
+                                    sl.SetCellValue(Row, Column, cdModel.ITEM_NAME);
+                                    sl.SetCellValue(Row, Column, fullMrc.ToString());
+                                    sl.SetCellValue(Row, Column, fullEnac.ToString());
+                                }
+
+                                Step_2();
+                                //INCREMENT STEP FOR PROGRESS BAR
+                                pb.PerformStep();
+
+                                //INCREMENT TOTAL SHEET ROW COUNTER
+                                totalCounter++;
                             }
-                            else
+
+                            //STEP 3
+                            try
                             {
-                                while (FastForward)
-                                {
-                                    //Used to 'jump' to row
-                                    //var fastForwardCounter = bookCounter > 0 ? bookCounter * 1000000 : 0;
-                                    var fastForwardCounter = 1000000;
-
-                                    //Jump to row first
-                                    for (int i = 0; i < fastForwardCounter; i++)
-                                    {
-                                        reader.ReadLine();
-                                    }
-
-                                    FastForward = false;
-                                }
-
-                                var nextLine = reader.ReadLine();
-                                var numMrcs = 0;
-                                var fullMrc = "";
-                                var fullEnac = "";
-                                var decodedMrcLength = 0;
-                                var mrcReplyLength = 0;
-                                var startIndex = 0;
-
-                                cdModel.FEDERAL_SUPPLY_CLASS = nextLine.Substring(0, 4);
-                                cdModel.NATIONAL_STOCK_NUMBER = nextLine.Substring(4, 9);
-                                cdModel.ITEM_NAME_CODE = nextLine.Substring(13, 5);
-
-                                var itemCharacters = int.Parse(nextLine.Substring(18, 2));
-                                cdModel.ITEM_NAME = nextLine.Substring(20, itemCharacters);
-                                numMrcs = int.Parse(nextLine.Substring(itemCharacters + 20, 4));
-
-                                startIndex = itemCharacters + 20 + 4;
-
-                                //MULTIPLE MRC | DECODED MRCs | MRC REPLIES - PIPELINE DELIMITED
-                                for (int i = 0; i < numMrcs; i++)
-                                {
-                                    fullMrc = nextLine.Substring(startIndex, 4) + " | ";
-                                    try
-                                    {
-                                        decodedMrcLength = int.Parse(nextLine.Substring(startIndex + 4, 4));
-                                    }
-                                    catch (Exception e)
-                                    {
-                                        MessageBox.Show("Error\n\n" +
-                                                        "numMrcs: " + numMrcs +
-                                                        "\n\rfullMrc: " + fullMrc +
-                                                        "\n\rstartIndex: " + startIndex + "\n\r" +
-                                                        "\n\rRow: " + Row +
-                                                        "\n\rnextLine.Substring(" + startIndex + " + 4): \n\r" +
-                                                        nextLine.Substring(startIndex));
-                                    }
-
-                                    var decodedMrc = nextLine.Substring(startIndex + 8, decodedMrcLength);
-                                    fullMrc += decodedMrc + " | ";
-
-                                    mrcReplyLength = int.Parse(nextLine.Substring(startIndex + 8 + decodedMrcLength,
-                                        4));
-
-                                    var fullMrcReply = nextLine.Substring(startIndex + 8 + decodedMrcLength + 4);
-                                    fullMrc += fullMrcReply + " | ";
-
-                                    startIndex = startIndex + 12 + decodedMrcLength + mrcReplyLength;
-                                }
-
-                                //MULTIPLE ENAC CODES
-                                var enacCounter = 0;
-                                var enacStartIndex = 2;
-
-                                //Go to next line
-                                nextLine = reader.ReadLine();
-
-                                enacCounter = int.Parse(nextLine.Substring(0, 2));
-
-                                for (int i = 0; i < enacCounter; i++)
-                                {
-                                    //IF FIRST ROUND OF ENAC CODES or LAST ENAC CODE
-                                    if (i == 0)
-                                    {
-                                        fullEnac += fullEnac + nextLine.Substring(enacStartIndex, 2);
-                                        enacStartIndex += 2;
-                                        continue;
-                                    }
-
-                                    if (enacCounter - 1 == i && i > 0)
-                                    {
-                                        fullEnac += fullEnac + nextLine.Substring(enacStartIndex, 2);
-                                    }
-                                    else
-                                    {
-                                        fullEnac += fullEnac + nextLine.Substring(enacStartIndex, 2) + " | ";
-                                    }
-
-                                    enacStartIndex = +2;
-                                }
-
-                                //ADD TO WORK SHEET
-                                Worksheet.Cells[Row, Column] = "\t" + cdModel.FEDERAL_SUPPLY_CLASS.Trim();
-                                Worksheet.Cells[Row, ++Column] = "\t" + cdModel.NATIONAL_STOCK_NUMBER.Trim();
-                                Worksheet.Cells[Row, ++Column] = "\t" + cdModel.ITEM_NAME_CODE.Trim();
-                                Worksheet.Cells[Row, ++Column] = "\t" + cdModel.ITEM_NAME.Trim();
-                                Worksheet.Cells[Row, ++Column] = "\t" + fullMrc.Trim();
-                                Worksheet.Cells[Row, ++Column] = "\t" + fullEnac.Trim();
+                                Step_3(sl);
+                                bookCounter++;
                             }
-
-                            //INCREMENT STEP FOR PROGRESS BAR
-                            pb.PerformStep();
-
-                            //INCREMENT SHEET ROW COUNTER
-                            SheetCounter++;
-
-                            //INCREMENT TOTAL SHEET ROW COUNTER
-                            totalCounter++;
-
-                            //RESET COLUMN COUNT
-                            Column = 1;
-
-                            //INCREMENT ROW
-                            Row++;
-                        }
-
-                        //RESET FOR NEW SHEET
-                        //Reset Row
-                        Row = 1;
-
-                        //Reset sheet counter...should never go over 1,000,000 rows
-                        SheetCounter = 0;
-
-                        //Re-initiate Fast Forward counter
-                        FastForward = true;
-
-                        try
-                        {
-                            CompleteFilePath = FolderDestination + @"\" + SheetName + "_" +
-                                               DateTime.Now.ToString("yyyy") + "_" + DateTime.Now.ToString("MMM") +
-                                               ".xlsx";
-                            bookCounter++;
-
-                            CloseExcelApplication();
-                            //MessageBox.Show("Book " + bookCounter + " finished.");
-                        }
-                        catch (Exception e)
-                        {
-                            MessageBox.Show("Error.\n\r" + e, "DLA to Excel", MessageBoxButtons.OK,
-                                MessageBoxIcon.Exclamation);
-                            System.Windows.Forms.Application.Exit();
+                            catch (Exception e)
+                            {
+                                MessageBox.Show("Error.\n\r" + e, "DLA to Excel", MessageBoxButtons.OK,
+                                    MessageBoxIcon.Exclamation);
+                            }
                         }
                     }
                 }
-
                 SuccessMessage();
             }
             catch (Exception e)
@@ -2495,14 +2482,12 @@ namespace DLA_to_Excel
 
         #endregion
 
-        #region CAGECDS
+        #region CAGECDS - NEED REVIEW
 
         public void CAGECDS()
         {
-            //Get # Books needed that is less than max excel row (1,000,000)
-            var numBooks = TotalRows / 1000000;
-
-            //Number of excel books
+            var maxRows = 250000;
+            var numBooks = TotalRows / maxRows;
             var bookCounter = 0;
             var totalCounter = 0;
             var fastForwardCounter = 0;
@@ -3132,7 +3117,7 @@ namespace DLA_to_Excel
 
         #endregion
 
-        #region AMMO
+        #region AMMO - NEED REVIEW
 
         private void AMMO()
         {
@@ -3178,7 +3163,7 @@ namespace DLA_to_Excel
                             am.DODIC = nextLine.Substring(index4, 4);
 
                         }
-
+                        
                         Worksheet.Cells[Row, Column] = "\t" + am.ITEM_NAME.Trim();
                         Worksheet.Cells[Row, ++Column] = "\t" + am.DODAC.Trim();
                         Worksheet.Cells[Row, ++Column] = "\t" + am.DESCRIPTION.Trim();
@@ -3199,7 +3184,7 @@ namespace DLA_to_Excel
 
         #endregion
 
-        #region ENAC
+        #region ENAC - NEED REVIEW
 
         private void ENAC()
         {
