@@ -6,5 +6,12 @@
         public string FILLER { get; set; }
         public string FSG_TITLE { get; set; }
         public string FSG_NOTES { get; set; }
+        public void Clear() 
+        {
+            FSG_CODE = "";
+            FILLER = "";
+            FSG_TITLE = "";
+            FSG_NOTES = "";
+        }
     }
 }

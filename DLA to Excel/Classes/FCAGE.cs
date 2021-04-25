@@ -43,5 +43,29 @@
         public string REPLACEMENT_CAGE { get; set; }
         public string FORMER_NAME_1 { get; set; }
         public string FORMER_NAME_2 { get; set; }
+
+        public void ClearForeign() {
+            FOREIGN_STREET_ADDRESS_1 = "";
+            FOREIGN_STREET_ADDRESS_2 = "";
+            FOREIGN_POST_OFFICE_BOX = "";
+            FOREIGN_CITY = "";
+            FOREIGN_PROVINCE = "";
+            FOREIGN_COUNTRY = "";
+            FOREIGN_POSTAL_ZONE = "";
+            FOREIGN_PHONE_NUMBER = "";
+            FOREIGN_FAX_NUMBER = "";
+        }
+
+        public void ClearDomestic() {
+            DOMESTIC_STREET_ADDRESS_1 = "";
+            DOMESTIC_STREET_ADDRESS_2 = "";
+            DOMESTIC_POST_OFFICE_BOX = "";
+            DOMESTIC_CITY = "";
+            DOMESTIC_STATE = "";
+            DOMESTIC_ZIP_CODE = "";
+            DOMESTIC_COUNTRY = "";
+            DOMESTIC_PHONE_FAX_NUMBER_1 = "";
+            DOMESTIC_PHONE_FAX_NUMBER_2 = "";
+        }
     }
 }
