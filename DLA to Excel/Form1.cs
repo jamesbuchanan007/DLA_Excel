@@ -160,477 +160,8 @@ namespace DLA_to_Excel
                 case "FLISFOIA":
                     FLISFOIA();
                     break;
-                case "FLISV":
-                    FLISV();
-                    break;
-                case "FSC":
-                    FSC();
-                    break;
-                case "FSG":
-                    FSG();
-                    break;
-                case "H4H8":
-                    H4H8();
-                    break;
                 default:
-                    MessageBox.Show("Method not entered yet in Case Statement", "DLA to Excel", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     break;
-            }
-        }
-        #endregion
-
-        #region H4H8
-        public void H4H8() 
-        {
-
-            //Get # Books needed that is less than max excel row (1,000,000)
-            var numBooks = TotalRows / 200000;
-
-            //Number of excel books
-            var bookCounter = 0;
-            var totalCounter = 0;
-            Row = 1;
-            Column = 1;
-
-            try
-            {
-                while ((bookCounter <= numBooks))
-                {
-
-                    TimeStart = DateTime.Now;
-                    lblStart.Text = "Start: " + TimeStart.ToString("h:mm:ss tt");
-                    FastForward = true;
-                    var h4hbModel = new H4H8();
-
-                    using (var stream = new FileStream(FileLocation, FileMode.Open, FileAccess.Read))
-                    using (var reader = new StreamReader(stream)) {
-                        UpdateSheetNames(bookCounter);
-                        using (SLDocument sl = new SLDocument()) {
-                            sl.RenameWorksheet(SLDocument.DefaultFirstSheetName, SlSheetName);
-                            while (bookCounter <= numBooks && SheetCounter < 200000 && !reader.EndOfStream &&
-                                   totalCounter <= TotalRows) {
-                                if (SheetCounter == 0)
-                                {
-                                    sl.SetCellValue(Row, Column, "Parent_Cage");
-                                    sl.SetCellValue(Row, ++Column, "Curr");
-                                    sl.SetCellValue(Row, ++Column, "FSG_TITLE");
-                                    sl.SetCellValue(Row, ++Column, "FSG_NOTES");
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                MessageBox.Show(e.ToString());
-                throw;
-            }
-        }
-        #endregion
-
-        #region FSG
-        public void FSG() 
-        {
-            //Get # Books needed that is less than max excel row (1,000,000)
-            var numBooks = TotalRows / 200000;
-
-            //Number of excel books
-            var bookCounter = 0;
-            var totalCounter = 0;
-            Row = 1;
-            Column = 1;
-
-            try
-            {
-                while (bookCounter <= numBooks)
-                {
-
-                    TimeStart = DateTime.Now;
-                    lblStart.Text = "Start: " + TimeStart.ToString("h:mm:ss tt");
-                    FastForward = true;
-                    var fsgModel = new FSG();
-
-                    using (var stream = new FileStream(FileLocation, FileMode.Open, FileAccess.Read))
-                    using (var reader = new StreamReader(stream))
-                    {
-
-                        UpdateSheetNames(bookCounter);
-
-                        using (SLDocument sl = new SLDocument()) {
-                            sl.RenameWorksheet(SLDocument.DefaultFirstSheetName, SlSheetName);
-                            while (bookCounter <= numBooks && SheetCounter < 200000 && !reader.EndOfStream &&
-                                   totalCounter <= TotalRows) {
-
-                                if (SheetCounter == 0)
-                                {
-                                    sl.SetCellValue(Row, Column, "FSG");
-                                    sl.SetCellValue(Row, ++Column, "FILLER");
-                                    sl.SetCellValue(Row, ++Column, "FSG_TITLE");
-                                    sl.SetCellValue(Row, ++Column, "FSG_NOTES");
-                                }
-                                else
-                                {
-                                    while (FastForward)
-                                    {
-                                        //Used to 'jump' to row
-                                        var fastForwardCounter = bookCounter > 0 ? bookCounter * 200000 : 0;
-
-                                        //Jump to row first
-                                        for (int i = 0; i < fastForwardCounter; i++)
-                                        {
-                                            reader.ReadLine();
-                                        }
-                                        FastForward = false;
-                                    }
-
-                                    var nextLine = reader.ReadLine();
-
-                                    fsgModel.FSG_CODE = nextLine.Substring(0, 2);
-                                    fsgModel.FILLER = nextLine.Substring(2, 4);
-
-                                    var line = nextLine.Substring(4);
-                                    var counter = 0;
-                                    for (int i = 0; i < line.Length; i++)
-                                    {
-                                        if (line[i] != '|') {
-                                            switch (counter) {
-                                                case 0:
-                                                    fsgModel.FSG_TITLE += line[i].ToString();
-                                                    break;
-                                                case 1:
-                                                    fsgModel.FSG_NOTES += line[i].ToString();
-                                                    break;
-                                            }
-                                        }
-                                        else
-                                        {
-                                            counter++;
-                                        }
-                                    }
-                                    counter = 0;
-
-                                    sl.SetCellValue(Row, Column, fsgModel.FSG_CODE);
-                                    sl.SetCellValue(Row, ++Column, fsgModel.FILLER);
-                                    sl.SetCellValue(Row, ++Column, fsgModel.FSG_TITLE);
-                                    sl.SetCellValue(Row, ++Column, fsgModel.FSG_NOTES);
-
-                                    fsgModel.Clear();
-                                }
-                                //STEP 2
-                                Step_2();
-
-                                //INCREMENT TOTAL SHEET ROW COUNTER
-                                totalCounter++;
-                            }
-                            //STEP 3
-                            try
-                            {
-                                Step_3(sl);
-                                bookCounter++;
-                            }
-                            catch (Exception e)
-                            {
-                                MessageBox.Show("Error.\n\r" + e, "DLA to Excel", MessageBoxButtons.OK,
-                                                                   MessageBoxIcon.Exclamation);
-                            }
-                        }
-                    }
-                }
-                SuccessMessage();
-            }
-            catch (Exception e)
-            {
-                MessageBox.Show(e.ToString());
-                throw;
-            }
-        }
-        #endregion
-
-        #region FSC
-        public void FSC()
-        {
-            //Get # Books needed that is less than max excel row (1,000,000)
-            var numBooks = TotalRows / 200000;
-
-            //Number of excel books
-            var bookCounter = 0;
-            var totalCounter = 0;
-            Row = 1;
-            Column = 1;
-
-            try
-            {
-                while (bookCounter <= numBooks)
-                {
-                    TimeStart = DateTime.Now;
-                    lblStart.Text = "Start: " + TimeStart.ToString("h:mm:ss tt");
-                    FastForward = true;
-                    var fscModel = new FSC();
-
-                    using (var stream = new FileStream(FileLocation, FileMode.Open, FileAccess.Read))
-                    using (var reader = new StreamReader(stream))
-                    {
-                        UpdateSheetNames(bookCounter);
-
-                        using (SLDocument sl = new SLDocument())
-                        {
-                            sl.RenameWorksheet(SLDocument.DefaultFirstSheetName, SlSheetName);
-                            while (bookCounter <= numBooks && SheetCounter < 200000 && !reader.EndOfStream &&
-                                   totalCounter <= TotalRows) 
-                            {
-                                if (SheetCounter == 0)
-                                {
-                                    sl.SetCellValue(Row, Column, "FSG");
-                                    sl.SetCellValue(Row, ++Column, "FSC");
-                                    sl.SetCellValue(Row, ++Column, "FSC_TITLE");
-                                    sl.SetCellValue(Row, ++Column, "FSC_NOTES");
-                                    sl.SetCellValue(Row, ++Column, "FSC_INCLUDE"); 
-                                    sl.SetCellValue(Row, ++Column, "FSC_EXCLUDE"); 
-                                    sl.SetCellValue(Row, ++Column, "FSG_TITLE"); 
-                                    sl.SetCellValue(Row, ++Column, "FSG_NOTES");
-                                }
-                                else
-                                {
-                                    while (FastForward)
-                                    {
-                                        //Used to 'jump' to row
-                                        var fastForwardCounter = bookCounter > 0 ? bookCounter * 200000 : 0;
-
-                                        //Jump to row first
-                                        for (int i = 0; i < fastForwardCounter; i++)
-                                        {
-                                            reader.ReadLine();
-                                        }
-                                        FastForward = false;
-                                    }
-                                    var nextLine = reader.ReadLine();
-
-                                    fscModel.FSG = nextLine.Substring(0, 2);
-                                    fscModel.FSC_CODE = nextLine.Substring(2, 4);
-                                    var line = nextLine.Substring(6);
-                                    var counter = 0;
-                                    for (int i = 0; i < line.Length; i++)
-                                    {
-                                        if (line[i] != '|') 
-                                        {
-                                            switch (counter) {
-                                                case 0:
-                                                    fscModel.FSC_TITLE += line[i].ToString();
-                                                    break;
-                                                case 1:
-                                                    fscModel.FSC_NOTES += line[i].ToString();
-                                                    break;
-                                                case 2:
-                                                    fscModel.FSC_INCLUDE += line[i].ToString();
-                                                    break;
-                                                case 3:
-                                                    fscModel.FSC_EXCLUDE += line[i].ToString();
-                                                    break;
-                                                case 4:
-                                                    fscModel.FSG_TITLE += line[i].ToString();
-                                                    break;
-                                                case 5:
-                                                    fscModel.FSG_NOTES += line[i].ToString();
-                                                    break;
-                                            }
-                                        }
-                                        else
-                                        {
-                                            counter++;
-                                        }
-                                    }
-
-                                    counter = 0;
-
-                                    sl.SetCellValue(Row, Column, fscModel.FSG);
-                                    sl.SetCellValue(Row, ++Column, fscModel.FSC_CODE);
-                                    sl.SetCellValue(Row, ++Column, fscModel.FSC_TITLE);
-                                    sl.SetCellValue(Row, ++Column, fscModel.FSC_NOTES);
-                                    sl.SetCellValue(Row, ++Column, fscModel.FSC_INCLUDE);
-                                    sl.SetCellValue(Row, ++Column, fscModel.FSC_EXCLUDE);
-                                    sl.SetCellValue(Row, ++Column, fscModel.FSG_TITLE);
-                                    sl.SetCellValue(Row, ++Column, fscModel.FSG_NOTES);
-
-                                    fscModel.Clear();
-                                }
-
-                                //STEP 2
-                                Step_2();
-
-                                //INCREMENT TOTAL SHEET ROW COUNTER
-                                totalCounter++;
-                            }
-                            //STEP 3
-                            try
-                            {
-                                Step_3(sl);
-                                bookCounter++;
-                            }
-                            catch (Exception e)
-                            {
-                                MessageBox.Show("Error.\n\r" + e, "DLA to Excel", MessageBoxButtons.OK,
-                                                                   MessageBoxIcon.Exclamation);
-                            }
-                        }
-                    }
-                }
-                SuccessMessage();
-            }
-            catch (Exception e)
-            {
-                MessageBox.Show(e.ToString());
-                throw;
-            }
-        }
-
-        #endregion
-        #region FLISV
-
-        private void FLISV()
-        {
-            //Get # Books needed that is less than max excel row (1,000,000)
-            var numBooks = TotalRows / 200000;
-
-            //Number of excel books
-            var bookCounter = 0;
-            var totalCounter = 0;
-            Row = 1;
-            Column = 1;
-
-            try
-            {
-                while (bookCounter <= numBooks)
-                {
-                    TimeStart = DateTime.Now;
-                    lblStart.Text = "Start: " + TimeStart.ToString("h:mm:ss tt");
-                    FastForward = true;
-                    var flisvModel = new FLISV();
-
-                    using (var stream = new FileStream(FileLocation, FileMode.Open, FileAccess.Read))
-                    using (var reader = new StreamReader(stream))
-                    {
-                        UpdateSheetNames(bookCounter);
-
-                        using (SLDocument sl = new SLDocument())
-                        {
-                            sl.RenameWorksheet(SLDocument.DefaultFirstSheetName, SlSheetName);
-                            while (bookCounter <= numBooks && SheetCounter < 200000 && !reader.EndOfStream &&
-                                   totalCounter <= TotalRows)
-                            {
-                                if (SheetCounter == 0)
-                                {
-                                    sl.SetCellValue(Row, Column, "NIIN");
-                                    sl.SetCellValue(Row, ++Column, "MRC");
-                                    sl.SetCellValue(Row, ++Column, "MC");
-                                    sl.SetCellValue(Row, ++Column, "CODED_CLEAR_REPLY");
-
-                                    //STEP 2
-                                    Step_2();
-
-                                    //INCREMENT TOTAL SHEET ROW COUNTER
-                                    totalCounter++;
-                                }
-                                else
-                                {
-                                    while (FastForward)
-                                    {
-                                        //Used to 'jump' to row
-                                        var fastForwardCounter = bookCounter > 0 ? bookCounter * 200000 : 0;
-
-                                        //Jump to row first
-                                        for (int i = 0; i < fastForwardCounter; i++)
-                                        {
-                                            reader.ReadLine();
-                                        }
-                                        FastForward = false;
-                                    }
-                                    var nextLine = reader.ReadLine();
-
-                                    flisvModel.NIIN = nextLine.Substring(0, 9);
-                                    var counter = int.Parse(nextLine.Substring(9, 4));
-                                    var restOfLine = nextLine.Substring(13);
-
-                                    var lineCounter = 0;
-
-                                    for (int i = 0; i < restOfLine.Length; i++)
-                                    {
-                                        if (restOfLine[i] != '#')
-                                        {
-                                            if (lineCounter < 4)
-                                            {
-                                                flisvModel.MRC = flisvModel.MRC + restOfLine[i].ToString();
-                                            }
-                                            else if (lineCounter < 5)
-                                            {
-                                                flisvModel.MC = flisvModel.MC + restOfLine[i].ToString();
-                                            }
-                                            else
-                                            {
-                                                flisvModel.CODE_CLEAR_REPLY = flisvModel.CODE_CLEAR_REPLY + restOfLine[i].ToString();
-                                            }
-
-                                            lineCounter++;
-                                        }
-                                        else
-                                        {
-                                            if (restOfLine[i + 1] == '#')
-                                            {
-                                                sl.SetCellValue(Row, Column, flisvModel.NIIN);
-                                                sl.SetCellValue(Row, ++Column, flisvModel.MRC);
-                                                sl.SetCellValue(Row, ++Column, flisvModel.MC);
-                                                sl.SetCellValue(Row, ++Column, flisvModel.CODE_CLEAR_REPLY);
-
-                                                flisvModel.Clear();
-
-                                                //STEP 2
-                                                Step_2();
-
-                                                //INCREMENT TOTAL SHEET ROW COUNTER
-                                                totalCounter++;
-
-                                                lineCounter = 0;
-                                                break;
-                                            }
-
-                                            sl.SetCellValue(Row, Column, flisvModel.NIIN);
-                                            sl.SetCellValue(Row, ++Column, flisvModel.MRC);
-                                            sl.SetCellValue(Row, ++Column, flisvModel.MC);
-                                            sl.SetCellValue(Row, ++Column, flisvModel.CODE_CLEAR_REPLY);
-
-                                            flisvModel.Clear();
-
-                                            //STEP 2
-                                            Step_2();
-
-                                            //INCREMENT TOTAL SHEET ROW COUNTER
-                                            totalCounter++;
-
-                                            lineCounter = 0;
-                                        }
-                                    }
-                                }
-                            }
-                            //STEP 3
-                            try
-                            {
-                                Step_3(sl);
-                                bookCounter++;
-                            }
-                            catch (Exception e)
-                            {
-                                MessageBox.Show("Error.\n\r" + e, "DLA to Excel", MessageBoxButtons.OK,
-                                                                   MessageBoxIcon.Exclamation);
-                            }
-                        }
-                    }
-                }
-                SuccessMessage();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                throw;
             }
         }
         #endregion
@@ -638,8 +169,8 @@ namespace DLA_to_Excel
         #region FLISFOIA
         private void FLISFOIA()
         {
-            //Get # Books needed that is less than max excel row (200,000)
-            var maxRows = 200000;
+            //Get # Books needed that is less than max excel row (250,000)
+            var maxRows = 250000;
             var numBooks = TotalRows / maxRows;
             //Number of excel books
             var bookCounter = 7;
@@ -2056,7 +1587,6 @@ namespace DLA_to_Excel
                             }
                         }
                     }
-                    Thread.Sleep(1000);
                 }
                 SuccessMessage();
             }
@@ -2325,7 +1855,15 @@ namespace DLA_to_Excel
                                         fcModel.DOMESTIC_PHONE_FAX_NUMBER_1 = strList[13];
                                         fcModel.DOMESTIC_PHONE_FAX_NUMBER_2 = strList[14];
 
-                                        fcModel.ClearForeign();                                       
+                                        fcModel.FOREIGN_STREET_ADDRESS_1 = "";
+                                        fcModel.FOREIGN_STREET_ADDRESS_2 = "";
+                                        fcModel.FOREIGN_POST_OFFICE_BOX = "";
+                                        fcModel.FOREIGN_CITY = "";
+                                        fcModel.FOREIGN_PROVINCE = "";
+                                        fcModel.FOREIGN_COUNTRY = "";
+                                        fcModel.FOREIGN_POSTAL_ZONE = "";
+                                        fcModel.FOREIGN_PHONE_NUMBER = "";
+                                        fcModel.FOREIGN_FAX_NUMBER = "";
 
                                         sl.SetCellValue(Row, ++Column, "\t" + fcModel.DOMESTIC_STREET_ADDRESS_1.Trim());
                                         sl.SetCellValue(Row, ++Column, "\t" + fcModel.DOMESTIC_STREET_ADDRESS_2.Trim());
@@ -2348,7 +1886,15 @@ namespace DLA_to_Excel
                                     }
                                     else
                                     {
-                                        fcModel.ClearDomestic();                                      
+                                        fcModel.DOMESTIC_STREET_ADDRESS_1 = "";
+                                        fcModel.DOMESTIC_STREET_ADDRESS_2 = "";
+                                        fcModel.DOMESTIC_POST_OFFICE_BOX = "";
+                                        fcModel.DOMESTIC_CITY = "";
+                                        fcModel.DOMESTIC_STATE = "";
+                                        fcModel.DOMESTIC_ZIP_CODE = "";
+                                        fcModel.DOMESTIC_COUNTRY = "";
+                                        fcModel.DOMESTIC_PHONE_FAX_NUMBER_1 = "";
+                                        fcModel.DOMESTIC_PHONE_FAX_NUMBER_2 = "";
 
                                         fcModel.FOREIGN_STREET_ADDRESS_1 = strList[6];
                                         fcModel.FOREIGN_STREET_ADDRESS_2 = strList[7];
@@ -2478,7 +2024,7 @@ namespace DLA_to_Excel
                 throw;
             }
         }
-        
+
         #endregion
 
         #region Check If Folder Exists
@@ -3654,6 +3200,7 @@ namespace DLA_to_Excel
         #endregion
 
         #region ENAC
+
         private void ENAC()
         {
             //Excel Object
@@ -3834,7 +3381,7 @@ namespace DLA_to_Excel
             var counter = 0.0;
             if (!CheckForEmptyFields(sender, e)) return;
             counter += File.ReadLines(opfd.FileName).Count();
-            var excelBooks = Math.Ceiling(counter / 200000);
+            var excelBooks = Math.Ceiling(counter / 250000);
             var text = "Rows: " + counter.ToString("N0") + " | Books: " + excelBooks.ToString("N0");
             lblRowCount.Text = text;
         }

@@ -10,16 +10,5 @@
         public string FSC_EXCLUDE { get; set; }
         public string FSG_TITLE { get; set; }
         public string FSG_NOTES { get; set; }
-
-        public void Clear() {
-            FSG = "";
-            FSC_CODE = "";
-            FSC_TITLE = "";
-            FSC_NOTES = "";
-            FSC_INCLUDE = "";
-            FSC_EXCLUDE = "";
-            FSG_TITLE = "";
-            FSG_NOTES = "";
-        }
     }
 }
